@@ -1,0 +1,26 @@
+---
+######################
+## MODIFY WITH CARE ##
+######################
+
+wheredir: "../../"
+nameserver: "192.168.0.1"
+
+## Lab Variables
+
+deployment: "training"
+enabled_machines: ["sumaserver", "sumaproxy", "client1"] 
+teacherid: "ssnow"
+student1:
+student2:
+student3:
+student4:
+student5:
+
+## Network Variables
+subnet160: "192.168.160"
+subnet161: "192.168.161"
+subnet160: "192.168.162"
+subnet163: "192.168.163"
+subnet164: "192.168.164"
+subnet165: "192.168.165"

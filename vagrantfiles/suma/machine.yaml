@@ -1,0 +1,40 @@
+server:
+  box: "sle15sp3"
+  fqdn: "sumaserver.labs.suse.com"
+  subnet: "subnet160"
+  address: "100"
+  cpus: "2"
+  memory: "16384"
+  data: "200G"
+  provisioning: "suma.sh"
+  environment: "SLE15"
+  regcode: "suma"
+  static: "static1"
+
+proxy:
+  box: "sle15sp3"
+  fqdn: "sumaproxy.labs.suse.com"
+  subnet: "subnet161"
+  address: "101"
+  cpus: "2"
+  memory: "8192"
+  data: "150G"
+  provisioning: "proxy.sh"
+  environment: "SLE15"
+  regcode: "proxy"
+  static: "N"
+
+client1:
+  box: "sle15sp3"
+  fqdn: "client1.labs.suse.com"
+  subnet: "subnet160"
+  address: "11"
+  cpus: "1"
+  memory: "1024"
+  data: "1G"
+  provisioning: "client.sh"
+  environment: "SLE15"
+  regcode: "none"
+  static: "N"
+
+  

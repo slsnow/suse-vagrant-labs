@@ -1,0 +1,77 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+custom_vars = YAML.load_file("./custom.yaml")
+WD = custom_vars["wheredir"]
+lab_vars = YAML.load_file("./lab.yaml")
+global_vars = YAML.load_file("#{WD}config/global.yaml")
+secret_vars = YAML.load_file("#{WD}config/secret.yaml")
+machine_vars = YAML.load_file("./machine.yaml")
+
+name = "#{custom_vars['teacherid']}-#{lab_vars['labname']}"
+
+MACHINES = machine_vars.map do |machine, specs|
+    { 
+    :machine_name => machine,
+    :box => specs['box'],
+    :fqdn => specs['fqdn'],
+    :subnet => specs['subnet'],
+    :address => specs['address'],
+    :cpus => specs['cpus'],
+    :memory => specs['memory'],
+    :data => specs['data'],
+    :provisioning => specs['provisioning'],
+    :environment => specs['environment'],
+    :regcode => specs['regcode'],
+    :static => specs['static']
+    }
+end
+
+Vagrant.configure("2") do |config|    
+
+    config.vm.synced_folder ".", "/vagrant", disabled: true
+    config.vm.provider :libvirt do |libvirt, override|
+      libvirt.cpus = lab_vars["libvirt"]["cpus"]
+      libvirt.memory = lab_vars["libvirt"]["memory"]
+      libvirt.machine_virtual_size = lab_vars["libvirt"]["machine_virtual_size"]
+    end
+  
+    config.trigger.before :destroy do |trigger|
+      trigger.name = "unregister"
+      trigger.info = "unregister client"
+      trigger.on_error = :continue
+      trigger.only_on = lab_vars["suseconnect-d"]
+      trigger.run_remote = {inline: <<-SHELL
+        echo "nameserver #{custom_vars["nameserver"]}" >>/etc/resolv.conf
+        if [[ $( SUSEConnect --status | python -c "import sys, json; print(json.load(sys.stdin)[0]['status'])" ) == "Registered" ]];
+        then
+          SUSEConnect -d;
+        fi
+      SHELL
+      }
+    end 
+    
+    MACHINES.each do |machine|
+        config.vm.define name+machine[:machine_name] do |node|
+            node.vm.box = global_vars["box"][machine[:box]]
+            node.vm.box_url = global_vars["boxurl"][machine[:box]]
+            node.vm.hostname = name+machine[:fqdn]
+            node.vm.network "private_network", ip: "#{custom_vars[machine[:subnet]]}.#{address = machine[:address]}", hostname: true
+            if machine[:static] == "static1"
+            node.vm.network :public_network, dev: "br0", mode: "bridge", type: "bridge", bridge: "eth2", ip: machine[:static], :auto_config => "false"
+            end
+            else
+            node.vm.provision "shell" do |s|
+                s.path = machine[:provisioning]
+                s.args = machine[:environment]
+                s.env = {
+                "REGCODE" => secret_vars["regcode"][machine[:regcode]],
+                "IPADDRESS" => "#{custom_vars[machine[:subnet]]}.#{address = machine[:address]}",
+                "FQDN" => machine[:fqdn],
+                "SHORT" => machine[:machine_name],
+                "GATEWAY" => "#{secret_vars["network"]["gateway"]}",
+                "STATIC" => "#{secret_vars["network"]["static1"]}"               
+                }
+            end
+        end
+    end    
+end  
