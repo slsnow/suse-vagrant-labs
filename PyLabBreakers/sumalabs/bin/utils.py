@@ -94,4 +94,30 @@ def remove_line_from_file(partial_line, file_path, debug=False):
             if partial_line not in line:
                 file.write(line)
             elif debug:
-                print(f"Removing line from {file_path}: {line.strip()}")                      
+                print(f"Removing line from {file_path}: {line.strip()}") 
+
+def load_yaml_config(config_path):
+    try:
+        with open(config_path, "r") as f:
+            config = yaml.safe_load(f)
+        return config
+    except Exception as e:
+        print(f"Error loading YAML configuration: {e}")
+        return None   
+
+def copy_ssh_keys(client, client_password, debug=False):
+    default_public_key = os.path.expanduser("~/.ssh/id_rsa.pub")
+    if os.path.exists(default_public_key):
+        if debug:
+            print(f"Found default public SSH key: {default_public_key}")
+
+        ssh_copy_command = ["ssh-copy-id", f"-f", f"-i {default_public_key}", f"root@{client}"]
+
+        os.environ["SSHPASS"] = client_password
+        subprocess.run(["sshpass", "-e"] + ssh_copy_command, capture_output=True)
+
+        if debug:
+            print(f"Copied SSH key to {client}")
+
+    else:
+        print(f"No default public SSH key found at {default_public_key}. Please generate one using 'ssh-keygen'.")                      
