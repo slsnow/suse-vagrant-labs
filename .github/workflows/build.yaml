@@ -56,8 +56,7 @@ jobs:
         path: provisioners/lab/suma/server/files/sumalabs
 
     - name: Commit changes
-      uses: EndBug/add-and-commit@v9
-      with:
-        commit: --signoff
-        new_branch: gh-actions-PyLabBreakers
-        pathspec_error_handling: ignore
+      uses: mikeal/publish-to-github-action@master
+      env:
+        GITHUB_TOKEN: ${{ PYLABBREAKERS_PAT }}
+        BRANCH_NAME: sumalabs-pythonscripts
