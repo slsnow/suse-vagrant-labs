@@ -59,6 +59,7 @@ def lab2(debug=False):
             result = subprocess.run(["systemctl", "start", "firewalld"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             if debug:
                 print(result.stdout.decode('utf-8'))
+                print(result.stderr.decode('utf-8'))
             pass
 
         def task2():
@@ -81,6 +82,7 @@ def lab2(debug=False):
                 result = subprocess.run(["firewall-cmd", "--permanent", "--direct", "--add-rule", "ipv4", "filter", "OUTPUT", "0", "-d", ip, "-j", "REJECT"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
                 if debug:
                     print(result.stdout.decode('utf-8'))
+                    print(result.stderr.decode('utf-8'))
             pass
 
         def task4():
@@ -135,6 +137,7 @@ def lab3(debug=False):
             result = subprocess.run(["spacecmd", "-u", "admin", "-p", "sumapass", "api", "--", "-A", sccorguser, "sync.content.deleteCredentials"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             if debug:
                 print(result.stdout.decode('utf-8'))
+                print(result.stderr.decode('utf-8'))
             pass
 
         tasks = [task1, task2, task3]
@@ -171,12 +174,14 @@ def lab4(debug=False):
             result = subprocess.run(["spacecmd", "-u", "admin", "-p", "sumapass", "api", "--", "-A", sccorguser, "sync.content.deleteCredentials"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             if debug:
                 print(result.stdout.decode('utf-8'))
+                print(result.stderr.decode('utf-8'))
             pass
 
         def task3():
-            result = subprocess.run(["spacecmd", "-u", "admin", "-p", "sumapass", "api", "--", "-A", f"{sccemptyuser},{sccemptypass},{sccemptypass}", "sync.content.addCredentials"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            result = subprocess.run(["spacecmd", "-u", "admin", "-p", "sumapass", "api", "--", "-A", f"{sccemptyuser},{sccemptypass},true", "sync.content.addCredentials"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             if debug:
                 print(result.stdout.decode('utf-8'))
+                print(result.stderr.decode('utf-8'))
             pass
 
         tasks = [task1, task2, task3]
@@ -197,24 +202,93 @@ def full(debug=False):
     if utils.query_yes_no("About to execute the scenario: " + lab_name + "\nDo you want to proceed?", default='no'):
         print("")
         bar_title = lab_name + " - [Loading]"
+        line1 = "8.8.8.8    scc.suse.com        scc"
+        line2 = "8.8.4.4    updates.suse.com    updates"
+
+        config = utils.load_yaml_config("/usr/share/rhn/sumalabs/conf.yaml")
+        if config is None:
+            print("Error loading configuration. Exiting.")
+            return
+
+        sccorguser = config["sccorguser"]
+        sccemptyuser = config["sccemptyuser"]
+        sccemptypass = config["sccemptypass"]
 
         def task1():
             time.sleep(1)
             pass
 
-        def task2():
-            lab1(debug)
+        def task2():    
+            if debug:
+                print("Current content of /etc/hosts before adding lines:")
+                with open("/etc/hosts", "r") as f:
+                    print(f.read())
             pass
 
         def task3():
-            lab2(debug)
+            utils.add_line_to_file(line1, "/etc/hosts", debug)
+            if debug: 
+                print(f"Adding line to /etc/hosts: {line1}")
             pass
 
         def task4():
-            lab4(debug)
+            utils.add_line_to_file(line2, "/etc/hosts", debug)
+            if debug:
+                print(f"Adding line to /etc/hosts: {line2}\n\n")
+            pass
+
+        def task5():
+            time.sleep(1)
+            result = subprocess.run(["systemctl", "start", "firewalld"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            if debug:
+                print(result.stdout.decode('utf-8'))
+                print(result.stderr.decode('utf-8'))
+            pass
+
+        def task6():
+            if debug:
+                print("Firewalld status before reloading:")
+                result_before = subprocess.run(["firewall-cmd", "--permanent", "--direct", "--get-all-rules"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                print(result_before.stdout.decode('utf-8'))
+            pass    
+
+        def task7():
+            dig_out_result = subprocess.run(["dig", "+short", "scc.suse.com"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            dig_out = dig_out_result.stdout.decode('utf-8').strip().split("\n")
+
+            for ip in dig_out:
+                if debug:
+                    print(f"Blocking IP: {ip}")
+                result = subprocess.run(["firewall-cmd", "--permanent", "--direct", "--add-rule", "ipv4", "filter", "OUTPUT", "0", "-d", ip, "-j", "REJECT"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                if debug:
+                    print(result.stdout.decode('utf-8'))
+                    print(result.stderr.decode('utf-8'))
+            pass
+
+        def task8():
+            subprocess.run(["firewall-cmd", "--reload"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+            if debug:
+                print("Firewalld status after reloading:")
+                result_before = subprocess.run(["firewall-cmd", "--permanent", "--direct", "--get-all-rules"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                print(result_before.stdout.decode('utf-8'))
+            pass
+
+        def task9():
+            result = subprocess.run(["spacecmd", "-u", "admin", "-p", "sumapass", "api", "--", "-A", sccorguser, "sync.content.deleteCredentials"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            if debug:
+                print(result.stdout.decode('utf-8'))
+                print(result.stderr.decode('utf-8'))
+            pass
+
+        def task10():
+            result = subprocess.run(["spacecmd", "-u", "admin", "-p", "sumapass", "api", "--", "-A", f"{sccemptyuser},{sccemptypass},true", "sync.content.addCredentials"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            if debug:
+                print(result.stdout.decode('utf-8'))
+                print(result.stderr.decode('utf-8'))
             pass
     
-        tasks = [task1, task2, task3, task4]
+        tasks = [task1, task2, task3, task4, task5, task6, task7, task8, task9, task10]
         utils.create_alive_bar(bar_title, tasks)
 
         print(lab_name + " - [Ready]")
@@ -240,6 +314,7 @@ def reset(debug=False):
         
         sccorguser = config["sccorguser"]
         sccorgpass = config["sccorgpass"]
+        sccemptyuser = config["sccemptyuser"]
 
         def task1():
             time.sleep(1)
@@ -258,34 +333,48 @@ def reset(debug=False):
             pass
 
         def task3():
+            # lab 2 reset
             if debug:
                 print(f"Removing Firewall OUTPUT Direct Rules (Permanently)")
             result = subprocess.run(["firewall-cmd", "--permanent", "--direct", "--remove-rules", "ipv4", "filter", "OUTPUT"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             if debug: 
                 print(result.stdout.decode('utf-8'))
+                print(result.stderr.decode('utf-8'))
             pass
 
         def task4():
-            time.sleep(1)
+            # lab2 reset continued
             result = subprocess.run(["systemctl", "stop", "firewalld"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             if debug:
                 print(result.stdout.decode('utf-8'))
+                print(result.stderr.decode('utf-8'))
             pass
 
         def task5():
-            time.sleep(1)
+            # lab2 reset continued
             result = subprocess.run(["firewall-cmd", "--reload"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             if debug:
                 print(result.stdout.decode('utf-8'))
+                print(result.stderr.decode('utf-8'))
             pass
 
         def task6():
-            result = subprocess.run(["spacecmd", "-u", "admin", "-p", "sumapass", "api", "--", "-A", f"{sccorguser},{sccorguser},{sccorgpass}", "sync.content.addCredentials"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            # lab 3 and 4 reset
+            result = subprocess.run(["spacecmd", "-u", "admin", "-p", "sumapass", "api", "--", "-A", sccemptyuser, "sync.content.deleteCredentials"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             if debug:
                 print(result.stdout.decode('utf-8'))
+                print(result.stderr.decode('utf-8'))
+            pass    
+
+        def task7():
+            # lab 3 and 4 reset continued
+            result = subprocess.run(["spacecmd", "-u", "admin", "-p", "sumapass", "api", "--", "-A", f"{sccorguser},{sccorgpass},true", "sync.content.addCredentials"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            if debug:
+                print(result.stdout.decode('utf-8'))
+                print(result.stderr.decode('utf-8'))
             pass
 
-        tasks = [task1, task2, task3, task4, task5, task6]
+        tasks = [task1, task2, task3, task4, task5, task6, task7]
         utils.create_alive_bar(bar_title, tasks)
 
         print(lab_name + " - [Ready]")
