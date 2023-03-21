@@ -39,6 +39,7 @@ jobs:
 
     - name: Move binary to desired locations
       run: |
+        mkdir -p PyLabBreakers/sumalabs/bin
         mv sumalabs PyLabBreakers/sumalabs/bin/
         cp PyLabBreakers/sumalabs/bin/sumalabs provisioners/lab/suma/server/files/sumalabs
 
