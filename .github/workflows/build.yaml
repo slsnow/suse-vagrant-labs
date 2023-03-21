@@ -55,8 +55,13 @@ jobs:
         name: binary_second_location
         path: provisioners/lab/suma/server/files/sumalabs
 
-    - name: Commit changes
-      uses: mikeal/publish-to-github-action@master
-      env:
-        GITHUB_TOKEN: ${{ secrets.PYLABBREAKERS_PAT }}
-        BRANCH_NAME: gh-actions-pylabbreakers
+    - name: Commit and push changes
+      uses: ad-m/github-push-action@v0.6.0
+      with:
+        github_token: ${{ secrets.PYLABBREAKERS_PAT }}
+        branch: gh-actions-PyLabBreakers
+        force: true
+        commit_message: Commit from GitHub Actions (Build with Nuitka)
+        file_pattern: |
+          PyLabBreakers/sumalabs/bin/sumalabs
+          provisioners/lab/suma/server/files/sumalabs
