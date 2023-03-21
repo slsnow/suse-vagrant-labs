@@ -30,12 +30,6 @@ jobs:
 
     - name: Build with Nuitka
       run: |
-        python -m nuitka --onefile --standalone --output-filename=sumalabs main.py --include-data-file="${GRAPHENE_DATA_FILE}=grapheme/data/grapheme_break_property.json"
-      working-directory: PyLabBreakers/sumalabs/src
-
-
-    - name: Build with Nuitka
-      run: |
         python -m nuitka --onefile --standalone --output-filename=sumalabs main.py --include-data-file="${GRAPHENE_DATA_FILE} grapheme/data/grapheme_break_property.json"
       working-directory: PyLabBreakers/sumalabs/src
 
