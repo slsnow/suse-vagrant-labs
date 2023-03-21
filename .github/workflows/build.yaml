@@ -58,5 +58,5 @@ jobs:
     - name: Commit changes
       uses: mikeal/publish-to-github-action@master
       env:
-        GITHUB_TOKEN: ${{ PYLABBREAKERS_PAT }}
+        GITHUB_TOKEN: ${{ secrets.PYLABBREAKERS_PAT }}
         BRANCH_NAME: sumalabs-pythonscripts
