@@ -1,0 +1,51 @@
+name: Build with Nuitka
+
+on:
+  push:
+    branches:
+      - main
+      - sumalabs-pythonscripts
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v2
+
+    - name: Set up Python 3.6
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.6
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+      working-directory: PyLabBreakers/sumalabs/src
+
+    - name: Build with Nuitka
+      run: |
+        python -m nuitka --onefile --standalone --output-filename=sumalabs main.py --include-data-file=/usr/local/lib/python3.6/dist-packages/grapheme/data/grapheme_break_property.json=grapheme/data/grapheme_break_property.json
+      working-directory: PyLabBreakers/sumalabs/src
+
+    - name: Move binary to desired locations
+      run: |
+        mv sumalabs PyLabBreakers/sumalabs/bin/
+        cp PyLabBreakers/sumalabs/bin/sumalabs provisioners/lab/suma/server/files/sumalabs
+
+    - name: Upload build artifact (PyLabBreakers/sumalabs/bin/)
+      uses: actions/upload-artifact@v2
+      with:
+        name: binary
+        path: PyLabBreakers/sumalabs/bin/sumalabs
+
+    - name: Upload build artifact (second_location)
+      uses: actions/upload-artifact@v2
+      with:
+        name: binary_second_location
+        path: provisioners/lab/suma/server/files/sumalabs

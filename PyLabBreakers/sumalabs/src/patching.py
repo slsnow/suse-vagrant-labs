@@ -86,7 +86,7 @@ def lab4(debug=False):
     else:
         print(" ")
 
-def patching(args):
+def patching(args, debug=False):
     if args.lab1:
         lab1()
     elif args.lab2:

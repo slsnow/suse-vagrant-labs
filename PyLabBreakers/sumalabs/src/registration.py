@@ -236,7 +236,7 @@ def reset(debug=False):
         print(" ")
 
 
-def registration(args):
+def registration(args, debug=False):
     if args.lab1:
         lab1()
     elif args.lab2:

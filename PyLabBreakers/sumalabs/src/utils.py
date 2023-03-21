@@ -3,6 +3,10 @@ import sys
 import subprocess
 import time
 import yaml
+from alive_progress import alive_bar
+
+silencer = ' > /dev/null 2>&1'
+bar_theme = 'classic'
 
 # query_yes_no function - borrowed from here: https://code.activestate.com/recipes/577058/ or https://stackoverflow.com/questions/3041986/apt-command-line-interface-like-yes-no-input
 def query_yes_no(question, default="yes"):
@@ -41,6 +45,22 @@ def query_yes_no(question, default="yes"):
         else:
             sys.stdout.write("Please respond with 'yes' or 'no' "
                              "(or 'y' or 'n').\n")
+            
+def create_alive_bar(bar_title, tasks):
+    total_items = len(tasks)
+    with alive_bar(total_items, theme=bar_theme, title=bar_title) as bar:
+        for task in tasks:
+            try:
+                task()
+                advance_progress(bar)
+            except Exception as e:
+                print(f"Error occurred while executing task: {task.__name__} - {str(e)}")
+                # Optionally, break the loop if you want to stop processing tasks on failure
+                # break
+
+def advance_progress(bar):
+    bar()
+    time.sleep(1)
 
 def set_working_dir(work_dir):
     try:

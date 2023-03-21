@@ -4,37 +4,45 @@ import time
 import socket
 import subprocess
 import yaml
-from alive_progress import alive_bar
-
-silencer = ' > /dev/null 2>&1'
-bar_type = "vertical"
 
 def lab1(debug=False):
-    if utils.query_yes_no("Are you sure?", default='no'):
-        print("\nLoading the mgr-sync scenario, lab1.\n")
-        with alive_bar(unknown=bar_type) as bar:
-            time.sleep(1)
+    lab_name = "mgr-sync lab1"
+    if utils.query_yes_no("About to execute the lab scenario: " + lab_name + ". Do you want to proceed?", default='no'): 
+        bar_title= "mgr-sync: lab1 - [Loading]"
 
+        def task1():
+            time.sleep(1)
+            pass
+
+        def task2():    
             if debug:
                 print("Current content of /etc/hosts before adding lines:")
                 with open("/etc/hosts", "r") as f:
                     print(f.read())
 
-            line1 = "10.124.163.4    scc.suse.com        scc"
-            line2 = "10.124.163.4    updates.suse.com    updates"   
+            line1 = "8.8.8.8    scc.suse.com        scc"
+            line2 = "8.8.4.4    updates.suse.com    updates"
+            pass
 
+        def task3():
             utils.add_line_to_file(line1, "/etc/hosts", debug)
             if debug: 
                 print(f"Adding line to /etc/hosts: {line1}")
+            pass
 
+        def task4():
             utils.add_line_to_file(line2, "/etc/hosts", debug)
             if debug:
-                print(f"Adding line to /etc/hosts: {line2}")
+                print(f"Adding line to /etc/hosts: {line2}\n\n")
+            pass
 
-            time.sleep(1)
-        print("\nmgr-sync scenario, lab1 - Ready\n========================")
-        print("Go to the SUSE Manager WebUI. Refresh the product catalog from the SUSE Customer Center")
-        input("\n\n\nPress ENTER to continue...")
+        tasks = [task1,task2,task3,task4]
+        utils.create_alive_bar(bar_title, tasks)
+
+        print("\n{0}\n{1}\n{0}".format("-" * 35, "mgr-sync: lab1 - [Ready]"))
+        print("\nInstructions:")
+        print("- Go to the SUSE Manager WebUI.")
+        print("- Refresh the product catalog from the SUSE Customer Center.")
     else:
         print(" ")
 
@@ -182,16 +190,16 @@ def reset(debug=False):
     else:
         print(" ")        
 
-def mgrsync(args):
+def mgrsync(args, debug=False):
     if args.lab1:
-        lab1()
+        lab1(debug)
     elif args.lab2:
-        lab2() 
+        lab2(debug)
     elif args.lab3:
-        lab3() 
+        lab3(debug)
     elif args.lab4:
-        lab4() 
+        lab4(debug)
     elif args.full:
-        full()
+        full(debug)
     elif args.reset:
-        reset()                               
+        reset(debug)                          
