@@ -1,6 +1,6 @@
 CC=gcc
 CCACHE_DIR=/home/runner/.cache/Nuitka/ccache
-CCACHE_LOGFILE=/home/runner/work/suse-vagrant-labs/suse-vagrant-labs/PyLabBreakers/sumalabs/src/main.build/ccache-2541.txt
+CCACHE_LOGFILE=/home/runner/work/suse-vagrant-labs/suse-vagrant-labs/PyLabBreakers/sumalabs/src/main.build/ccache-2785.txt
 CCCOM=$CC -o $TARGET -c $CFLAGS $CCFLAGS $_CCCOMCOM $SOURCES
 CFILESUFFIX=.c
 CPPDEFINES=['__NUITKA_NO_ASSERT__', '_NUITKA_STANDALONE', '_NUITKA_ONEFILE_MODE', '_NUITKA_ONEFILE_TEMP_BOOL', '_NUITKA_CONSTANTS_FROM_INCBIN', '_NUITKA_FROZEN=155', '_NUITKA_EXE']
