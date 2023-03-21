@@ -1,0 +1,72 @@
+name: Build with Nuitka
+
+on:
+  push:
+    branches:
+      - main
+      - sumalabs-pythonscripts
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-18.04
+
+    steps:
+    - name: Check out repository
+      uses: actions/checkout@v2
+      with:
+        persist-credentials: false
+        fetch-depth: 0
+
+    - name: Set up Python 3.6
+      uses: actions/setup-python@v2
+      with:
+        python-version: 3.6
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+      working-directory: PyLabBreakers/sumalabs/src
+
+    - name: Find grapheme data file location
+      run: |
+        echo "GRAPHENE_DATA_FILE=$(python -c 'import os, grapheme; print(os.path.join(grapheme.__path__[0], "data", "grapheme_break_property.json"))')" >> $GITHUB_ENV
+
+    - name: Build with Nuitka
+      run: |
+        python -m nuitka --onefile --standalone --output-filename=sumalabs main.py --include-data-file="${GRAPHENE_DATA_FILE}=grapheme/data/grapheme_break_property.json"
+      working-directory: PyLabBreakers/sumalabs/src
+
+    - name: Move binary to desired locations
+      run: |
+        mkdir -p PyLabBreakers/sumalabs/bin
+        mv PyLabBreakers/sumalabs/src/sumalabs PyLabBreakers/sumalabs/bin/
+        cp PyLabBreakers/sumalabs/bin/sumalabs provisioners/lab/suma/server/files/sumalabs
+
+    - name: Upload build artifact (PyLabBreakers/sumalabs/bin/)
+      uses: actions/upload-artifact@v2
+      with:
+        name: binary
+        path: PyLabBreakers/sumalabs/bin/sumalabs
+
+    - name: Upload build artifact (second_location)
+      uses: actions/upload-artifact@v2
+      with:
+        name: binary_second_location
+        path: provisioners/lab/suma/server/files/sumalabs
+
+    - name: Commit files
+      run: |
+        git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git config --local user.name "github-actions[bot]"
+        git add .
+        git commit -m "Add changes"
+
+    - name: Push changes
+      uses: ad-m/github-push-action@master
+      with:
+        github_token: ${{ secrets.PYLABBREAKERS_PAT }}
+        branch: gh-actions-PyLabBreakers
