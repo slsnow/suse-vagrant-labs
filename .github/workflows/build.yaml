@@ -28,9 +28,13 @@ jobs:
         pip install -r requirements.txt
       working-directory: PyLabBreakers/sumalabs/src
 
+    - name: Find grapheme data file location
+      run: |
+        echo "GRAPHENE_DATA_FILE=$(python -c 'import os, grapheme; print(os.path.join(grapheme.__path__[0], "data", "grapheme_break_property.json"))')" >> $GITHUB_ENV
+
     - name: Build with Nuitka
       run: |
-        python -m nuitka --onefile --standalone --output-filename=sumalabs main.py --include-data-file="${GRAPHENE_DATA_FILE} grapheme/data/grapheme_break_property.json"
+        python -m nuitka --onefile --standalone --output-filename=sumalabs main.py --include-data-file="${GRAPHENE_DATA_FILE}=grapheme/data/grapheme_break_property.json"
       working-directory: PyLabBreakers/sumalabs/src
 
     - name: Move binary to desired locations
