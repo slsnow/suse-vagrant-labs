@@ -37,14 +37,10 @@ jobs:
         python -m nuitka --onefile --standalone --output-filename=sumalabs main.py --include-data-file="${GRAPHENE_DATA_FILE}=grapheme/data/grapheme_break_property.json"
       working-directory: PyLabBreakers/sumalabs/src
 
-    - name: Check generated file location
-      run: |
-        ls PyLabBreakers/sumalabs/src  
-
     - name: Move binary to desired locations
       run: |
         mkdir -p PyLabBreakers/sumalabs/bin
-        mv sumalabs PyLabBreakers/sumalabs/bin/
+        mv PyLabBreakers/sumalabs/src/sumalabs PyLabBreakers/sumalabs/bin/
         cp PyLabBreakers/sumalabs/bin/sumalabs provisioners/lab/suma/server/files/sumalabs
 
     - name: Upload build artifact (PyLabBreakers/sumalabs/bin/)
