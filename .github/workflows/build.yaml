@@ -3,11 +3,10 @@ name: Build with Nuitka
 on:
   push:
     branches:
-      - main
-      - sumalabs-pythonscripts
+      - gh-actions-PyLabBreakers
   pull_request:
     branches:
-      - main
+      - gh-actions-PyLabBreakers
 
 jobs:
   build:
@@ -68,5 +67,5 @@ jobs:
     - name: Push changes
       uses: ad-m/github-push-action@master
       with:
-        github_token: ${{ secrets.PYLABBREAKERS_PAT }}
+        github_token: ${{ secrets.GITHUB_TOKEN }}
         branch: gh-actions-PyLabBreakers

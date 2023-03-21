@@ -4,11 +4,15 @@ import time
 import socket
 import subprocess
 import yaml
+import sys
 
 def lab1(debug=False):
     lab_name = "mgr-sync lab1"
-    if utils.query_yes_no("About to execute the lab scenario: " + lab_name + ". Do you want to proceed?", default='no'): 
-        bar_title= "mgr-sync: lab1 - [Loading]"
+    if utils.query_yes_no("About to execute the scenario: " + lab_name + "\nDo you want to proceed?", default='no'): 
+        print("")
+        bar_title= lab_name + " - [Loading]\n"
+        line1 = "8.8.8.8    scc.suse.com        scc"
+        line2 = "8.8.4.4    updates.suse.com    updates"
 
         def task1():
             time.sleep(1)
@@ -19,9 +23,6 @@ def lab1(debug=False):
                 print("Current content of /etc/hosts before adding lines:")
                 with open("/etc/hosts", "r") as f:
                     print(f.read())
-
-            line1 = "8.8.8.8    scc.suse.com        scc"
-            line2 = "8.8.4.4    updates.suse.com    updates"
             pass
 
         def task3():
@@ -39,156 +40,258 @@ def lab1(debug=False):
         tasks = [task1,task2,task3,task4]
         utils.create_alive_bar(bar_title, tasks)
 
-        print("\n{0}\n{1}\n{0}".format("-" * 35, "mgr-sync: lab1 - [Ready]"))
+        print(lab_name + " - [Ready]")
         print("\nInstructions:")
         print("- Go to the SUSE Manager WebUI.")
         print("- Refresh the product catalog from the SUSE Customer Center.")
+        print("- Discover issues, and fix them.")
     else:
         print(" ")
 
 def lab2(debug=False):
-    if utils.query_yes_no("Are you sure?", default='no'):
-        print("\nLoading the mgr-sync scenario, lab2...\n")
-        with alive_bar(unknown=bar_type) as bar:
+    lab_name = "mgr-sync lab2"
+    if utils.query_yes_no("About to execute the scenario: " + lab_name + "\nDo you want to proceed?", default='no'):
+        print("")
+        bar_title= lab_name + " - [Loading]\n"
+
+        def task1():
             time.sleep(1)
+            result = subprocess.run(["systemctl", "start", "firewalld"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            if debug:
+                print(result.stdout.decode('utf-8'))
+            pass
 
-            # Create a custom firewalld zone called 'block_scc'
-            subprocess.run(["firewall-cmd", "--permanent", "--new-zone=block_scc"], capture_output=True)
-
-            # Get the IP addresses for scc.suse.com
-            dig_out = subprocess.run(["dig", "+short", "scc.suse.com"], capture_output=True, text=True).stdout.strip().split("\n")
-
-            for ip in dig_out:
-                # Add a rich rule to block traffic from the IP addresses of scc.suse.com
-                if debug:
-                    print(f"Blocking IP: {ip}")
-                subprocess.run(["firewall-cmd", "--permanent", "--zone=block_scc", "--add-rich-rule='rule family=ipv4 source address={} drop'".format(ip)], capture_output=True)
-
-            # Set the default zone to 'block_scc'
-            subprocess.run(["firewall-cmd", "--set-default-zone=block_scc"], capture_output=True)
-
-            # Reload firewalld to apply changes, with debug
+        def task2():
+                # check currect rules
             if debug:
                 print("Firewalld status before reloading:")
-                subprocess.run(["firewall-cmd", "--state"], capture_output=True)
-            
-            subprocess.run(["firewall-cmd", "--reload"], capture_output=True)
-            
+                result_before = subprocess.run(["firewall-cmd", "--permanent", "--direct", "--get-all-rules"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                print(result_before.stdout.decode('utf-8'))
+            pass    
+
+        def task3():
+            # Get the IP addresses for scc.suse.com
+            dig_out_result = subprocess.run(["dig", "+short", "scc.suse.com"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            dig_out = dig_out_result.stdout.decode('utf-8').strip().split("\n")
+
+            for ip in dig_out:
+                # Add a rich rule to block traffic to the IP addresses of scc.suse.com
+                if debug:
+                    print(f"Blocking IP: {ip}")
+                result = subprocess.run(["firewall-cmd", "--permanent", "--direct", "--add-rule", "ipv4", "filter", "OUTPUT", "0", "-d", ip, "-j", "REJECT"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                if debug:
+                    print(result.stdout.decode('utf-8'))
+            pass
+
+        def task4():
+            # Check rules and reload
+            subprocess.run(["firewall-cmd", "--reload"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
             if debug:
                 print("Firewalld status after reloading:")
-                subprocess.run(["firewall-cmd", "--state"], capture_output=True)
+                result_before = subprocess.run(["firewall-cmd", "--permanent", "--direct", "--get-all-rules"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+                print(result_before.stdout.decode('utf-8'))
+            pass
+        
+        tasks = [task1,task2,task3,task4]
+        utils.create_alive_bar(bar_title, tasks)
 
-        print("\nmgr-sync scenario, lab2 - Ready\n========================")
-        print("Go to the SUSE Manager WebUI and refresh the product catalog from the SUSE Customer Center")
-        time.sleep(1)
-        input("\n\n\nPress ENTER to continue...")
+        print(lab_name + " - [Ready]")
+        print("\nInstructions:")
+        print("- Go to the SUSE Manager WebUI.")
+        print("- Refresh the product catalog from the SUSE Customer Center.")
+        print("- Discover issues, and fix them.")
     else:
         print(" ")
 
 def lab3(debug=False):
-    config = utils.load_yaml_config("/usr/share/rhn/sumalabs/conf.yaml")
-    if config is None:
-        print("Error loading configuration. Exiting.")
-        return
+    lab_name = "mgr-sync lab3"
+    if utils.query_yes_no("About to execute the scenario: " + lab_name + "\nDo you want to proceed?", default='no'):
+        print("")
+        bar_title = lab_name + " - [Loading]"
 
-    sccorguser = config["sccorguser"]
+        config = utils.load_yaml_config("/usr/share/rhn/sumalabs/conf.yaml")
+        if config is None:
+            print("Error loading configuration. Exiting.")
+            return
 
-    if utils.query_yes_no("Are you sure?", default='no'):
-        print("\nLoading the mgr-sync scenario, lab3...\n")
-        with alive_bar(unknown=bar_type) as bar:
-            subprocess.run(["systemctl", "stop", "firewalld.service"], capture_output=True)
-            subprocess.run(["spacecmd", "-u", "admin", "-p", "trainpass", "api", "--", "-A", sccorguser, "sync.content.deleteCredentials"], capture_output=True)
+        sccorguser = config["sccorguser"]
+
+        def task1():
             time.sleep(1)
-        print("\nmgr-sync scenario, lab3 - Ready\n========================")
-        print("Go to the SUSE Manager WebUI and attempt to mirror a children product from SLES 15 SP2")
-        time.sleep(1)
-        input("\n\n\nPress ENTER to continue...")
+            pass  
+
+        def task2():
+            result = subprocess.run(["iptables", "-S"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            output = result.stdout.decode('utf-8')
+            if debug:
+                print(output)
+
+            if "OUTPUT" in output and "REJECT" in output:
+                print("Warning: Resolve the 'mgr-sync lab2' scenario. Or run `sumalabs mgr-sync --reset' and try again.")
+                sys.exit()
+
+        def task3():
+            result = subprocess.run(["spacecmd", "-u", "admin", "-p", "sumapass", "api", "--", "-A", sccorguser, "sync.content.deleteCredentials"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            if debug:
+                print(result.stdout.decode('utf-8'))
+            pass
+
+        tasks = [task1, task2, task3]
+        utils.create_alive_bar(bar_title, tasks)
+
+        print(lab_name + " - [Ready]")
+        print("\nInstructions:")
+        print("- Go to the SUSE Manager WebUI.")
+        print("- Attempt to mirror a child product from SLES 15 SP3 in the webUI.")
+        print("- Discover issues, and fix them.")
     else:
         print(" ")
 
 def lab4(debug=False):
-    config = utils.load_yaml_config("/usr/share/rhn/sumalabs/conf.yaml")
-    if config is None:
-        print("Error loading configuration. Exiting.")
-        return
+    lab_name = "mgr-sync lab4"
+    if utils.query_yes_no("About to execute the scenario: " + lab_name + "\nDo you want to proceed?", default='no'):
+        print("")
+        bar_title = lab_name + " - [Loading]"
 
-    sccorguser = config["sccorguser"]
-    sccemptyuser = config["sccemptyuser"]
-    sccemptypass = config["sccemptypass"]
+        config = utils.load_yaml_config("/usr/share/rhn/sumalabs/conf.yaml")
+        if config is None:
+            print("Error loading configuration. Exiting.")
+            return
 
-    if utils.query_yes_no("Are you sure?", default='no'):
-        print("\nLoading the mgr-sync scenario, lab4...\n")
-        with alive_bar(unknown=bar_type) as bar:
-            subprocess.run(["spacecmd", "-u", "admin", "-p", "trainpass", "api", "--", "-A", sccorguser, "sync.content.deleteCredentials"], capture_output=True)
-            subprocess.run(["spacecmd", "-u", "admin", "-p", "trainpass", "api", "--", "-A", f"{sccemptyuser},{sccemptypass},{sccemptypass}", "sync.content.addCredentials"], capture_output=True)
+        sccorguser = config["sccorguser"]
+        sccemptyuser = config["sccemptyuser"]
+        sccemptypass = config["sccemptypass"]
+
+        def task1():
             time.sleep(1)
-        print("\nmgr-sync scenario lab4 - Ready\n========================")
-        print("Go to the SUSE Manager WebUI and attempt to mirror a children product from SLES 15 SP2")
-        input("\n\n\nPress ENTER to continue...")
+            pass
+
+        def task2():
+            result = subprocess.run(["spacecmd", "-u", "admin", "-p", "sumapass", "api", "--", "-A", sccorguser, "sync.content.deleteCredentials"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            if debug:
+                print(result.stdout.decode('utf-8'))
+            pass
+
+        def task3():
+            result = subprocess.run(["spacecmd", "-u", "admin", "-p", "sumapass", "api", "--", "-A", f"{sccemptyuser},{sccemptypass},{sccemptypass}", "sync.content.addCredentials"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            if debug:
+                print(result.stdout.decode('utf-8'))
+            pass
+
+        tasks = [task1, task2, task3]
+        utils.create_alive_bar(bar_title, tasks)
+
+        print(lab_name + " - [Ready]")
+        print("\nInstructions:")
+        print("- Go to the SUSE Manager WebUI.")
+        print("- Run 'mgr-sync refresh', or refresh product catalog in the webUI.")
+        print("- Attempt to mirror a child product from SLES 15 SP3 in the webUI.")
+        print("- Discover issues, and fix them.")
     else:
         print(" ")
 
+
 def full(debug=False):
-    print("Running the full scenario (lab1, lab2, lab3, and lab4)...\n")
+    lab_name = "mgr-sync full"
+    if utils.query_yes_no("About to execute the scenario: " + lab_name + "\nDo you want to proceed?", default='no'):
+        print("")
+        bar_title = lab_name + " - [Loading]"
+
+        def task1():
+            time.sleep(1)
+            pass
+
+        def task2():
+            lab1(debug)
+            pass
+
+        def task3():
+            lab2(debug)
+            pass
+
+        def task4():
+            lab4(debug)
+            pass
     
-    lab1(debug)
-    lab2(debug)
-    lab3(debug)
-    lab4(debug)
-    
-    print("\nFull scenario completed.")        
+        tasks = [task1, task2, task3, task4]
+        utils.create_alive_bar(bar_title, tasks)
+
+        print(lab_name + " - [Ready]")
+        print("\nInstructions:")
+        print("- Go to the SUSE Manager WebUI.")
+        print("- Refresh the product catalog from the SUSE Customer Center.")
+        print("- Run 'mgr-sync refresh', or refresh the product catalog in the webUI.")
+        print("- Attempt to mirror a child product from SLES 15 SP3 in the webUI.")
+        print("- Discover issues, and fix them.")
+    else:
+        print(" ")  
 
 def reset(debug=False):
-    config = utils.load_yaml_config("/usr/share/rhn/sumalabs/conf.yaml")
-    if config is None:
-        print("Error loading configuration. Exiting.")
-        return
+    lab_name = "mgr-sync reset"
+    if utils.query_yes_no("About to reset all changes made by mgr-sync labs.\nDo you want to proceed?", default='no'):
+        print("")
+        bar_title = lab_name + " - [Loading]"
 
-    sccorguser = config["sccorguser"]
-    sccorgpass = config["sccorgpass"]
+        config = utils.load_yaml_config("/usr/share/rhn/sumalabs/conf.yaml")
+        if config is None:
+            print("Error loading configuration. Exiting.")
+            return    
+        
+        sccorguser = config["sccorguser"]
+        sccorgpass = config["sccorgpass"]
 
-    if utils.query_yes_no("Are you sure you want to reset all changes made by labs 1-4?", default='no'):
-        print("\nResetting the mgr-sync labs...\n")
-        with alive_bar(unknown=bar_type) as bar:
+        def task1():
             time.sleep(1)
+            pass
 
+        def task2():
             # Lab 1 reset
             if debug:
                 print("Current content of /etc/hosts before removing lines:")
                 with open("/etc/hosts", "r") as f:
                     print(f.read())
+            partial_line1 = "scc"
+            partial_line2 = "updates"      
             utils.remove_line_from_file(partial_line1, "/etc/hosts", debug)
             utils.remove_line_from_file(partial_line2, "/etc/hosts", debug)
+            pass
+
+        def task3():
             if debug:
-                print("Current content of /etc/hosts after removing lines:")
-                with open("/etc/hosts", "r") as f:
-                    print(f.read())
+                print(f"Removing Firewall OUTPUT Direct Rules (Permanently)")
+            result = subprocess.run(["firewall-cmd", "--permanent", "--direct", "--remove-rules", "ipv4", "filter", "OUTPUT"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            if debug: 
+                print(result.stdout.decode('utf-8'))
+            pass
 
-            # Lab 2 reset
-            dig_out = subprocess.run(["dig", "+short", "scc.suse.com"], capture_output=True, text=True).stdout.strip().split("\n")
-            dig_out1 = dig_out[0]
-            dig_out2 = dig_out[1]
-            if debug:
-                print(f"Removing firewall rule blocking IP: {dig_out1}")
-            subprocess.run(["firewall-cmd", "--permanent", "--direct", "--remove-rule", "ipv4", "filter", "INPUT_direct", "0", "-s", dig_out1, "-j", "DROP"], capture_output=True)
-
-            if debug:
-                print(f"Removing firewall rule blocking IP: {dig_out2}")
-            subprocess.run(["firewall-cmd", "--permanent", "--direct", "--remove-rule", "ipv4", "filter", "INPUT_direct", "0", "-s", dig_out2, "-j", "DROP"], capture_output=True)
-
-            subprocess.run(["firewall-cmd", "--reload"], capture_output=True)
-
-            # Lab 3 reset - firewalld will be kept off at the end
-            # subprocess.run(["systemctl", "start", "firewalld.service"], capture_output=True)
-
-            # Lab 4 reset
-            subprocess.run(["spacecmd", "-u", "admin", "-p", "trainpass", "api", "--", "-A", f"{sccorguser},{sccorgpass},{sccorgpass}", "sync.content.addCredentials"], capture_output=True)
-
+        def task4():
             time.sleep(1)
-        print("\nmgr-sync labs reset complete\n========================")
-        input("\n\n\nPress ENTER to continue...")
+            result = subprocess.run(["systemctl", "stop", "firewalld"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            if debug:
+                print(result.stdout.decode('utf-8'))
+            pass
+
+        def task5():
+            time.sleep(1)
+            result = subprocess.run(["firewall-cmd", "--reload"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            if debug:
+                print(result.stdout.decode('utf-8'))
+            pass
+
+        def task6():
+            result = subprocess.run(["spacecmd", "-u", "admin", "-p", "sumapass", "api", "--", "-A", f"{sccorguser},{sccorguser},{sccorgpass}", "sync.content.addCredentials"], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            if debug:
+                print(result.stdout.decode('utf-8'))
+            pass
+
+        tasks = [task1, task2, task3, task4, task5, task6]
+        utils.create_alive_bar(bar_title, tasks)
+
+        print(lab_name + " - [Ready]")
+        print("\nReset complete!")
     else:
-        print(" ")        
+        print(" ")      
 
 def mgrsync(args, debug=False):
     if args.lab1:
