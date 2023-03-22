@@ -42,11 +42,8 @@ jobs:
     - name: Move binary to desired locations
       run: |
         mkdir -p LabBreakers/sumalabs/bin
-        ls -la LabBreakers/sumalabs/bin
-        ls -la LabBreakers/sumalabs/src
-        ls -la LabBreakers/sumalabs/
         cp LabBreakers/sumalabs/bin/sumalabs provisioners/lab/suma/server/files/sumalabs
-        cp LabBreakers/sumalabs/src/sumalabs_completion.sh provisioners/lab/suma/server/files/sumalabs
+        cp LabBreakers/sumalabs/src/sumalabs_completion.sh provisioners/lab/suma/server/files/sumalabs_completion.sh
 
     - name: Upload build artifact (LabBreakers/sumalabs/bin/)
       uses: actions/upload-artifact@v2
