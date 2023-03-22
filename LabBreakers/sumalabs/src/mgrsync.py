@@ -43,8 +43,9 @@ def lab1(debug=False):
         print(lab_name + " - [Ready]")
         print("\nInstructions:")
         print("- Go to the SUSE Manager WebUI.")
-        print("- Refresh the product catalog from the SUSE Customer Center.")
-        print("- Discover issues, and fix them.")
+        print("- Navigate to SUSEManager>Admin>Setup Wizard>Products")
+        print("- Select the 'refresh' button to 'Refresh the product catalog from the SUSE Customer Center'.")
+        print("- Discover any issues, and fix them.")
     else:
         print(" ")
 
@@ -102,7 +103,7 @@ def lab2(debug=False):
         print("\nInstructions:")
         print("- Go to the SUSE Manager WebUI.")
         print("- Refresh the product catalog from the SUSE Customer Center.")
-        print("- Discover issues, and fix them.")
+        print("- Discover any issues, and fix them.")
     else:
         print(" ")
 
@@ -146,8 +147,9 @@ def lab3(debug=False):
         print(lab_name + " - [Ready]")
         print("\nInstructions:")
         print("- Go to the SUSE Manager WebUI.")
+        print("- Navigate to SUSEManager>Admin>Setup Wizard>Products")
         print("- Attempt to mirror a child product from SLES 15 SP3 in the webUI.")
-        print("- Discover issues, and fix them.")
+        print("- Discover any issues, and fix them.")
     else:
         print(" ")
 
@@ -192,7 +194,7 @@ def lab4(debug=False):
         print("- Go to the SUSE Manager WebUI.")
         print("- Run 'mgr-sync refresh', or refresh product catalog in the webUI.")
         print("- Attempt to mirror a child product from SLES 15 SP3 in the webUI.")
-        print("- Discover issues, and fix them.")
+        print("- Discover any issues, and fix them.")
     else:
         print(" ")
 

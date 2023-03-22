@@ -37,7 +37,7 @@ SUSEConnect -p sle-module-development-tools/15.3/x86_64
 SUSEConnect -p sle-module-python2/15.3/x86_64
 zypper install -y man man-pages-posix man-pages rsyslog vim-data aaa_base-extras wget zypper-log
 systemctl enable --now rsyslog
-zypper install -y spacecmd spacewalk-utils* salt-bash-completion expect
+zypper install -y spacecmd spacewalk-utils* salt-bash-completion expect python3-devel
 zypper install -y -t pattern documentation enhanced_base suma_server yast2_basis yast2_server
 zypper patch -y
 zypper patch -y

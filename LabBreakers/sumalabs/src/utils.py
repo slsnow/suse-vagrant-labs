@@ -4,9 +4,15 @@ import subprocess
 import time
 import yaml
 from alive_progress import alive_bar
+import paramiko
+from paramiko import SSHClient, AutoAddPolicy
+import re
+import os
+from contextlib import contextmanager
 
 silencer = ' > /dev/null 2>&1'
 bar_theme = 'classic'
+client_password = "linux"
 
 # query_yes_no function - borrowed from here: https://code.activestate.com/recipes/577058/ or https://stackoverflow.com/questions/3041986/apt-command-line-interface-like-yes-no-input
 def query_yes_no(question, default="yes"):
@@ -82,11 +88,13 @@ def add_line_to_file(line, file_path, debug=False):
     line : string
         The line to be added to the file.
     """
-    with open(file_path, 'r+') as file:
+    with open(file_path, 'a+') as file:
         lines = file.readlines()
         if line + "\n" not in lines:
             if debug:
                 print(f"Adding line to {file_path}: {line}")
+            if file.tell() > 0 and not file.read()[-1:] == '\n':
+                file.write("\n")
             file.write(f"{line}\n")
         else:
             if debug:
@@ -125,19 +133,43 @@ def load_yaml_config(config_path):
         print(f"Error loading YAML configuration: {e}")
         return None   
 
-def copy_ssh_keys(client, client_password, debug=False):
-    default_public_key = os.path.expanduser("~/.ssh/id_rsa.pub")
-    if os.path.exists(default_public_key):
+def ssh_connect(host, username, password=None, command='', debug=False):
+    client = SSHClient()
+    client.set_missing_host_key_policy(AutoAddPolicy()) 
+    try:
+        client.connect(host, username=username, password=password, look_for_keys=True)
+        stdin, stdout, stderr = client.exec_command(command)
+        output = stdout.read().decode('utf-8')
         if debug:
-            print(f"Found default public SSH key: {default_public_key}")
-
-        ssh_copy_command = ["ssh-copy-id", f"-f", f"-i {default_public_key}", f"root@{client}"]
-
-        os.environ["SSHPASS"] = client_password
-        subprocess.run(["sshpass", "-e"] + ssh_copy_command, capture_output=True)
-
+            print(f"on {host}: {output}")
+        client.close()
+        return output
+    except Exception as e:
         if debug:
-            print(f"Copied SSH key to {client}")
+            print(f"on {host}: {str(e)}")
+        client.close()
+        return None 
+    
+def modify_file_using_regex(pattern, replacement, file_path, debug=False):
+    if debug:
+        print(f"Modifying {file_path}: replacing '{pattern}' with '{replacement}'")
+    with open(file_path, 'r') as file:
+        content = file.read()
+    content = re.sub(pattern, replacement, content)
+    with open(file_path, 'w') as file:
+        file.write(content)
 
-    else:
-        print(f"No default public SSH key found at {default_public_key}. Please generate one using 'ssh-keygen'.")                      
+@contextmanager
+def shutup():
+    old_stdout = os.dup(1)
+    old_stderr = os.dup(2)
+    os.dup2(os.open(os.devnull, os.O_WRONLY), 1)
+    os.dup2(os.open(os.devnull, os.O_WRONLY), 2)
+    try:
+        yield
+    finally:
+        os.dup2(old_stdout, 1)
+        os.dup2(old_stderr, 2)
+        os.close(old_stdout)
+        os.close(old_stderr)
+     
