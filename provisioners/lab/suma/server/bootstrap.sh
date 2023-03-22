@@ -46,6 +46,16 @@ timedatectl set-timezone America/Denver
 
 if [ $DEPLOYMENT == "training" ]; then
   echo "training"
+  mv /tmp/sumalabs /usr/bin/sumalabs
+  chmod 755 /usr/bin/sumalabs
+  mv /tmp/sumalabs_completion.sh /etc/bash_completion.d/
+  mkdir -p /usr/share/rhn/sumalabs/
+  echo "sccorguser: '$SCCORGUSER'" >> /usr/share/rhn/sumalabs/conf.yaml
+  echo "sccorgpass: '$SCCORGPASS'" >> /usr/share/rhn/sumalabs/conf.yaml
+  echo "sccemptyuser: '$SCCEMPTYUSER'" >> /usr/share/rhn/sumalabs/conf.yaml
+  echo "sccemptypass: '$SCCEMPTYPASS'" >> /usr/share/rhn/sumalabs/conf.yaml
+  chmod 755 /usr/share/rhn/sumalabs/conf.yaml
+
 elif [ $DEPLOYMENT == "fulldeploy" ]; then
   echo "fulldeploy"
 
