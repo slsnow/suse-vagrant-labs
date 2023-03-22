@@ -36,13 +36,13 @@ jobs:
 
     - name: Build with Nuitka
       run: |
-        python -m nuitka --onefile --standalone --output-dir=build --output-filename=sumalabs sumalabs.py --include-data-file="${GRAPHENE_DATA_FILE}=grapheme/data/grapheme_break_property.json"
+        python -m nuitka --onefile --standalone --output-dir=LabBreakers/sumalabs/build --output-filename=sumalabs sumalabs.py --include-data-file="${GRAPHENE_DATA_FILE}=grapheme/data/grapheme_break_property.json"
       working-directory: LabBreakers/sumalabs/src
 
     - name: Move binary to desired locations
       run: |
         mkdir -p LabBreakers/sumalabs/bin
-        mv LabBreakers/sumalabs/src/sumalabs LabBreakers/sumalabs/bin/
+        mv LabBreakers/sumalabs/build/sumalabs LabBreakers/sumalabs/bin/
         cp LabBreakers/sumalabs/bin/sumalabs provisioners/lab/suma/server/files/sumalabs
         cp LabBreakers/sumalabs/src/sumalabs_completion.sh provisioners/lab/suma/server/files/sumalabs
 

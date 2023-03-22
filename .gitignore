@@ -1,4 +1,4 @@
-LabBreakers/sumalabs/src/build*
 config/secret.yaml
 .vagrant/
 .git/
+.build/
