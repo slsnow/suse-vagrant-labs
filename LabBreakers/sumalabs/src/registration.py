@@ -445,11 +445,11 @@ def lab4(debug=False):
         print("- Register client4 to SUSE Manager.")
         print("- Wait a minute.")
         print("- Verify that all clients are accessible via the WebUI Systems page.")
+    else:
+        print(" ") 
 
-def full(debug=False):
-    print("This option is currently unavailable.... Please revert to a snapshot, or cleanup clients manually.")  
-
-    """
+"""
+def full(debug=False):    
     lab_name = "registration full"
     if utils.query_yes_no("About to execute the scenario: " + lab_name + "\nDo you want to proceed?", default='no'): 
         print("")
@@ -794,11 +794,13 @@ def full(debug=False):
     else:
         print(" ")
     """    
-
-def reset(debug=False):
-    print("This option is currently unavailable.... Please revert to a snapshot, or cleanup clients manually.")        
+      
 
 """
+Cleanup commands, one-liner:
+# rm -rf /etc/venv-salt-minion/* /var/cache/venv-salt-minion/* /etc/zypp/{credentials,services,repos}.d/*; zypper rm -y venv-salt-minion
+
+def reset(debug=False):
     lab_name = "registration reset"
     if utils.query_yes_no("About to reset all registration labs.\nDo you want to proceed?", default='no'): 
         print("")
@@ -871,7 +873,7 @@ def registration(args, debug=False):
         lab3(debug) 
     elif args.lab4:
         lab4(debug)
-    elif args.full:
-        full(debug)
-    elif args.reset:
-        reset(debug)    
+#    elif args.full:
+#        full(debug)
+#    elif args.reset:
+#        reset(debug)    

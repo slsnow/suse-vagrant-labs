@@ -1,10 +1,11 @@
+#! /usr/bin/python3.6
+
 import warnings
 warnings.filterwarnings(action='ignore',message='Python 3.6 is no longer supported')
 import os
 os.environ['PYTHONIOENCODING'] = 'UTF-8'
 os.environ['LANG'] = 'en_US.UTF-8'
 import argparse
-import argcomplete
 import sys
 from mgrsync import mgrsync
 from patching import patching
@@ -18,8 +19,6 @@ def main(argv):
         
         # Hidden debug argument
         parser.add_argument('--debug', action='store_true', help=argparse.SUPPRESS)
-
-        argcomplete.autocomplete(parser)
 
         subparsers = parser.add_subparsers(dest='command', help='Available commands')
 
@@ -38,8 +37,9 @@ def main(argv):
         parser_mgr_sync.add_argument('--lab2', action='store_true', help='Load the lab2 scenario')
         parser_mgr_sync.add_argument('--lab3', action='store_true', help='Load the lab3 scenario')
         parser_mgr_sync.add_argument('--lab4', action='store_true', help='Load the lab4 scenario')    
-        parser_mgr_sync.add_argument('--full', action='store_true', help='Load all of the registration lab scenarios') 
-        parser_mgr_sync.add_argument('--reset', action='store_true', help='Reset the registration lab scenarios')
+        #parser_mgr_sync.add_argument('--full', action='store_true', help='Load all of the registration lab scenarios') 
+        #parser_mgr_sync.add_argument('--reset', action='store_true', help='Reset the registration lab scenarios')
+
 
         # patching lab scenarios
         parser_mgr_sync = subparsers.add_parser('patching', help='patching lab scenarios.')

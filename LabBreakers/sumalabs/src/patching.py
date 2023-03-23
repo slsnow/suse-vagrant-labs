@@ -1,101 +1,211 @@
 import os
 import utils
 import time
-import socket
 import subprocess
-import yaml
 import sys
-from alive_progress import alive_bar
 
-silencer = ' > /dev/null 2>&1'
-bar_type = "vertical"
+def lab1(debug=False):
+    lab_name = "patching lab1"
+    if utils.query_yes_no("About to execute the scenario: " + lab_name + "\nDo you want to proceed?", default='no'):
+        print("")
+        bar_title = lab_name + " - [Loading]\n"
+        client2break = "client1"
+        channel2remove = "sle-product-sles15-sp3-ltss-updates-x86_64"
 
-def lab1():
-    if utils.query_yes_no("Are you sure?", default='no'):
-        print("\nPatching scenario, lab1 - Loading.\n")
-        client_to_break = "client1"
-        channel_to_remove = "sle-module-basesystem15-sp3-updates-x86_64"
-        cmd = f'spacecmd -y -- system_removechildchannels {client_to_break} {channel_to_remove}'
-        
-        try:
-            subprocess.run(cmd, shell=True, check=True, text=True)
-            print("\nPatching scenario, lab1 - Ready\n========================")
-            print("From the webUI, try to apply patches on the system client1.")
-            input("\n\n\nPress ENTER to continue...")
-        except subprocess.CalledProcessError as e:
-            print(f"Error: {e.output}")
-            print("An error occurred while loading patching scenario, lab 1.")
-            sys.exit(1)
+        def task0():
+            time.sleep(1)
+            pass
+
+        def task1():
+            ssh_output = utils.ssh_connect(client2break, 'root', None, 'echo SSH_OK', debug)
+            if ssh_output is None:
+                print("Unable to establish a passwordless SSH connection to the client.")
+                print("Please ensure the client is set up for key-based authentication and verify the connection manually.")
+                print("Refer to the provided documentation for further guidance.")
+                sys.exit(1)
+            pass
+
+        def task2():
+            command = f"spacecmd -u admin -p sumapass -y -- system_removechildchannels {client2break} {channel2remove}"
+            result = subprocess.run(command.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            if debug:
+                print(f"Running spacecmd to remove the childchannel {channel2remove} from {client2break}")
+                print(result.stdout.decode('utf-8'))
+                print(result.stderr.decode('utf-8'))
+            pass 
+
+        def task3():
+            time.sleep(1)
+            pass
+
+        tasks = [task0, task1, task2, task3]
+        utils.create_alive_bar(bar_title, tasks)
+
+        print(lab_name + " - [Ready]")
+        print("\nInstructions:")
+        print("- Apply Patches to client1.")
+        print("- Verify that the patches install successfully.")
+        print("- Verify that the system is running the latest LTSS kernel.")
     else:
-        print(" ")
+        print(" ") 
 
-def lab2():
-    if utils.query_yes_no("Are you sure?", default='no'):
-        print("\nPatching scenario, lab2 - Loading.\n")
-        client_to_break = "client2"
-        cmd = f'ssh {client_to_break} "zypper al kernel*" {silencer}'
+def lab2(debug=False):
+    lab_name = "patching lab2"
+    if utils.query_yes_no("About to execute the scenario: " + lab_name + "\nDo you want to proceed?", default='no'):
+        print("")
+        bar_title = lab_name + " - [Loading]\n"
+        client2break = "client2"
 
-        try:
-            subprocess.run(cmd, shell=True, check=True, text=True)
-            print("\nPatching scenario, lab2 - Ready\n========================")
-            print("From the webUI, try to apply patches on the system client2.")
-            input("\n\n\nPress ENTER to continue...")
-        except subprocess.CalledProcessError as e:
-            print(f"Error: {e.output}")
-            print("An error occurred while loading patching scenario, lab 2.")
-            sys.exit(1)
+        def task0():
+            time.sleep(1)
+            pass
+
+        def task1():
+            ssh_output = utils.ssh_connect(client2break, 'root', None, 'echo SSH_OK', debug)
+            if ssh_output is None:
+                print("Unable to establish a passwordless SSH connection to the client.")
+                print("Please ensure the client is set up for key-based authentication and verify the connection manually.")
+                print("Refer to the provided documentation for further guidance.")
+                sys.exit(1)
+            pass
+
+        def task2():
+            command = f'ssh {client2break} zypper al kernel*'
+            result = subprocess.run(command.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            if debug:
+                print(f"Adding a zypper lock to the kernel on {client2break}")
+                print(result.stdout.decode('utf-8'))
+                print(result.stderr.decode('utf-8'))
+            pass 
+
+        def task3():
+            time.sleep(1)
+            pass
+
+        tasks = [task0, task1, task2, task3]
+        utils.create_alive_bar(bar_title, tasks)
+
+        print(lab_name + " - [Ready]")
+        print("\nInstructions:")
+        print("- Apply Patches to client2.")
+        print("- Verify that the patches install successfully.")
+        print("- Verify that the system is running the latest LTSS kernel.")
     else:
-        print(" ")
+        print(" ")     
 
-def lab3():
-    if utils.query_yes_no("Are you sure?", default='no'):
-        print("\nPatching scenario, lab3 - Loading.\n")
-        client_to_break = "client3"
-        cmd1 = f'ssh {client_to_break} "bash -c \'exec -a zypper sleep 1000000\' &" {silencer}'
-        cmd2 = f'ssh {client_to_break} "pidof zypper > /var/run/zypp.pid" {silencer}'
+def lab3(debug=False):
+    lab_name = "patching lab3"
+    if utils.query_yes_no("About to execute the scenario: " + lab_name + "\nDo you want to proceed?", default='no'):
+        print("")
+        bar_title = lab_name + " - [Loading]\n"
+        client2break = "client3"
 
-        try:
-            subprocess.run(cmd1, shell=True, check=True, text=True)
-            subprocess.run(cmd2, shell=True, check=True, text=True)
-            print("\nPatching scenario, lab3 - Ready\n========================")
-            print("From the webUI, try to apply patches on the system client3.")
-            input("\n\n\nPress ENTER to continue...")
-        except subprocess.CalledProcessError as e:
-            print(f"Error: {e.output}")
-            print("An error occurred while loading patching scenario, lab 3.")
-            sys.exit(1)
+        def task0():
+            time.sleep(1)
+            pass
+
+        def task1():
+            ssh_output = utils.ssh_connect(client2break, 'root', None, 'echo SSH_OK', debug)
+            if ssh_output is None:
+                print("Unable to establish a passwordless SSH connection to the client.")
+                print("Please ensure the client is set up for key-based authentication and verify the connection manually.")
+                print("Refer to the provided documentation for further guidance.")
+                sys.exit(1)
+            pass
+
+        def task2():
+            subcommand = f"nohup bash -c 'exec -a zypper sleep 1000000' >/dev/null 2>&1 &"
+            command = ['ssh', client2break, subcommand]
+            result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            if debug:
+                print(f"Running a sleep command, disguised as zypper on {client2break}")
+                print(result.stdout.decode('utf-8'))
+                print(result.stderr.decode('utf-8'))
+            pass
+
+        def task3():
+            subcommand = f"pgrep -f zypper > /var/run/zypp.pid"
+            command = ['ssh', client2break, subcommand ]
+            result = subprocess.run(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            if debug:
+                print("Writing zypper process ID(s) to /var/run/zypp.pid.")
+                print(result.stdout.decode('utf-8'))
+                print(result.stderr.decode('utf-8'))
+            pass  
+
+        def task4():
+            time.sleep(1)
+            pass
+
+        tasks = [task0, task1, task2, task3, task4]
+        utils.create_alive_bar(bar_title, tasks)
+
+        print(lab_name + " - [Ready]")
+        print("\nInstructions:")
+        print("- Apply Patches to client3.")
+        print("- Verify that the patches install successfully.")
+        print("- Verify that the system is running the latest LTSS kernel.")
     else:
-        print(" ")
+        print(" ")      
 
 def lab4(debug=False):
-    if utils.query_yes_no("Are you sure?", default='no'):
-        print("\nPatching scenario, lab4 - Loading. Please wait, this could take a minute.\n")
-        cmd1 = "zypper in -y --oldpackage salt-master-3002.2-150300.53.7.2 salt-3002.2-150300.53.7.2 python3-salt-3002.2-150300.53.7.2 salt-api-3002.2-150300.53.7.2 salt-bash-completion-3002.2-150300.53.7.2 salt-minion-3002.2-150300.53.7.2.x86_64"
-        cmd2 = "spacewalk-service restart"
+    lab_name = "patching lab4"
+    if utils.query_yes_no("About to execute the scenario: " + lab_name + "\nDo you want to proceed?", default='no'):
+        print("")
+        bar_title = lab_name + " - [Loading]\n"
 
-        try:
-            subprocess.run(cmd1, shell=True, check=True, text=True, stderr=subprocess.STDOUT if debug else subprocess.DEVNULL)
-            subprocess.run(cmd2, shell=True, check=True, text=True, stderr=subprocess.STDOUT if debug else subprocess.DEVNULL)
-            print("\nPatching scenario, lab4 - Ready\n========================")
-            print("Try to apply patches to the system client4.")
-            input("\n\n\nPress ENTER to continue...")
-        except subprocess.CalledProcessError as e:
-            print(f"Error: {e.output}")
-            print("An error occurred while loading patching scenario, lab 4.")
-            sys.exit(1)
+        def task0():
+            time.sleep(1)
+            pass
+
+        def task1():
+            command = f'zypper in -y --oldpackage salt-master-3002.2-150300.53.7.2 salt-3002.2-150300.53.7.2 python3-salt-3002.2-150300.53.7.2 salt-api-3002.2-150300.53.7.2 salt-bash-completion-3002.2-150300.53.7.2 salt-minion-3002.2-150300.53.7.2.x86_64'
+            result = subprocess.run(command.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            if debug:
+                print("Reverting salt to old package versions.")
+                print(result.stdout.decode('utf-8'))
+                print(result.stderr.decode('utf-8'))
+            pass
+
+        def task2():
+            time.sleep(1)
+            pass
+
+        def task3():
+            print("\n Please wait. This may take a minute.")
+            command = f"spacewalk-service restart"
+            result = subprocess.run(command.split(), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            if debug:
+                print("Restarting spacewalk-service.")
+                print(result.stdout.decode('utf-8'))
+                print(result.stderr.decode('utf-8'))
+            pass 
+
+        def task4():
+            time.sleep(1)
+            pass
+
+        tasks = [task0, task1, task2, task3, task4]
+        utils.create_alive_bar(bar_title, tasks)
+
+        print(lab_name + " - [Ready]")
+        print("\nInstructions:")
+        print("- Apply Patches to client4.")
+        print("- Verify that the patches install successfully.")
+        print("- Verify that the system is running the latest LTSS kernel.")
     else:
-        print(" ")
+        print(" ")    
 
 def patching(args, debug=False):
     if args.lab1:
-        lab1()
+        lab1(debug)
     elif args.lab2:
-        lab2() 
+        lab2(debug) 
     elif args.lab3:
-        lab3() 
+        lab3(debug) 
     elif args.lab4:
-        lab4() 
-    elif args.full:
-        full()
-    elif args.reset:
-        reset()                        
+        lab4(debug) 
+   # elif args.full:
+   #     full(debug)
+   # elif args.reset:
+   #     reset(debug)                      

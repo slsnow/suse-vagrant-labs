@@ -16,10 +16,10 @@ _sumalabs() {
             opts="--lab1 --lab2 --lab3 --lab4 --reset --full"
             ;;
         registration)
-            opts="--lab1 --lab2 --lab3 --lab4 --reset --full"
+            opts="--lab1 --lab2 --lab3 --lab4" # --reset --full
             ;;
         patching)
-            opts="--lab1 --lab2 --lab3 --lab4 --reset --full"
+            opts="--lab1 --lab2 --lab3 --lab4" # --reset --full
             ;;
         *)
             opts=""
