@@ -19,23 +19,39 @@ jobs:
         persist-credentials: false
         fetch-depth: 0
 
+    - name: Install Python 3.6 development headers
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y python3.6-dev
+
     - name: Set up Python 3.6
       uses: actions/setup-python@v2
       with:
         python-version: 3.6
+    
+    - name: Install virtualenv
+      run: |
+        pip3.6 install virtualenv
+        
+    - name: Set up virtual environment
+      run: |
+        python3.6 -m venv venv
 
     - name: Install dependencies
       run: |
+        . venv/bin/activate
         python -m pip install --upgrade pip
         pip install -r requirements.txt
-      working-directory: LabBreakers/sumalabs/src
+      working-directory: LabBreakers/sumalabs/src     
 
     - name: Find grapheme data file location
       run: |
+        . venv/bin/activate
         echo "GRAPHENE_DATA_FILE=$(python -c 'import os, grapheme; print(os.path.join(grapheme.__path__[0], "data", "grapheme_break_property.json"))')" >> $GITHUB_ENV
 
     - name: Build with Nuitka
       run: |
+        . venv/bin/activate
         python -m nuitka sumalabs.py --onefile --standalone --output-dir=${GITHUB_WORKSPACE}/LabBreakers/sumalabs/bin --output-filename=sumalabs  --include-data-file="${GRAPHENE_DATA_FILE}=grapheme/data/grapheme_break_property.json" --remove-output
       working-directory: LabBreakers/sumalabs/src
 
@@ -56,11 +72,16 @@ jobs:
         name: binary_second_location
         path: provisioners/lab/suma/server/files/sumalabs
 
+    - name: Clean up venv folder
+      run: |
+        rm -rf venv    
+
     - name: Commit files
       run: |
         git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
         git config --local user.name "github-actions[bot]"
-        git add .
+        git add LabBreakers/sumalabs/bin/sumalabs
+        git add provisioners/lab/suma/server/files/sumalabs
         git commit -m "Add changes"
 
     - name: Push changes
