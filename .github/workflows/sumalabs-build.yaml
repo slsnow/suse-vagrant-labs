@@ -61,7 +61,7 @@ jobs:
         python --version
         echo "Python Path:"
         which python
-        python -m nuitka sumalabs.py --onefile --standalone --output-dir=${GITHUB_WORKSPACE}/LabBreakers/sumalabs/bin --output-filename=sumalabs  --include-data-file="${GRAPHENE_DATA_FILE}=grapheme/data/grapheme_break_property.json" --remove-output
+        python -m nuitka sumalabs.py --onefile --standalone --follow-imports --recurse-all --output-dir=${GITHUB_WORKSPACE}/LabBreakers/sumalabs/bin --output-filename=sumalabs  --include-data-file="${GRAPHENE_DATA_FILE}=grapheme/data/grapheme_break_property.json" --remove-output
       working-directory: LabBreakers/sumalabs/src
 
     - name: Move binary to desired locations
