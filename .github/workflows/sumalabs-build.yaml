@@ -49,12 +49,12 @@ jobs:
 
     - name: Find grapheme data file location
       run: |
-        . venv/bin/activate
+        source activate
         echo "GRAPHENE_DATA_FILE=$(python -c 'import os, grapheme; print(os.path.join(grapheme.__path__[0], "data", "grapheme_break_property.json"))')" >> $GITHUB_ENV
 
     - name: Build with Nuitka
       run: |
-        . venv/bin/activate
+        source activate
         unset PYTHONHOME
         unset PYTHONPATH
         echo "Python Version:"
