@@ -36,6 +36,8 @@ jobs:
     - name: Set up virtual environment
       run: |
         python3.6 -m venv venv
+        echo "VIRTUAL_ENV=$(pwd)/venv" >> $GITHUB_ENV
+        echo "$(pwd)/venv/bin" >> $GITHUB_PATH
 
     - name: Install dependencies
       run: |
