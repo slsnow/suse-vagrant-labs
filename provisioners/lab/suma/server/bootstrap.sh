@@ -3,10 +3,11 @@
 sed -i 's/rpm.install.excludedocs = yes/rpm.install.excludedocs = no/' /etc/zypp/zypp.conf
 
 #ip addr add $STATIC dev eth2
-ip route replace default via $GATEWAY dev eth2
+
 sed -i "s/\$SUBNET/${SUBNET}/g" /tmp/hosts
 cp /tmp/hosts /etc/hosts
-
+echo "DHCLIENT_SET_DEFAULT_ROUTE='no'" >> /etc/sysconfig/network/ifcfg-eth0
+echo "WICKED_ROUTING_RULES='default via \$GATEWAY'" >> /etc/sysconfig/network/ifcfg-eth2
 mkdir -p /tmp/data-backup/var/cache/
 mkdir -p /var/lib/pgsql/
 mkdir -p /var/spacewalk/
