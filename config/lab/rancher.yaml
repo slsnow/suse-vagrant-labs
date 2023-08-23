@@ -1,0 +1,9 @@
+---
+suseconnect-d: ["ranch0", "ranch1"]
+labname: "rancher"
+requiredsecrets: ["sleregcode"]
+
+machines:  
+  trento:
+    - ranch0
+    - ranch1
