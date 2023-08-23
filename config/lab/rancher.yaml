@@ -1,5 +1,5 @@
 ---
-suseconnect-d: ["ranch0", "ranch1"]
+suseconnect-d: ["rancher1", "rancher2", "ranch-utils"]
 labname: "rancher"
 requiredsecrets: ["sleregcode"]
 
