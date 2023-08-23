@@ -3,7 +3,7 @@
 sed -i 's/rpm.install.excludedocs = yes/rpm.install.excludedocs = no/' /etc/zypp/zypp.conf
 
 #ip addr add $STATIC dev eth2
-ip route replace default via $GATEWAY dev eth2
+#ip route replace default via $GATEWAY dev eth2
 sed -i "s/\$SUBNET/${SUBNET}/g" /tmp/hosts
 cp /tmp/hosts /etc/hosts
 
@@ -29,4 +29,4 @@ timedatectl set-timezone America/Denver
 zypper install mariadb mariadb-client
 systemctl enable --now mariadb
 
-mysql -e "CREATE DATABASE rancher-datastore;"
+mysql -e "CREATE DATABASE rancherdatastore;"

@@ -15,9 +15,9 @@ SUSEConnect -p sle-module-desktop-applications/15.4/x86_64
 SUSEConnect -p sle-module-development-tools/15.4/x86_64
 SUSEConnect -p sle-module-python3/15.4/x86_64
 SUSEConnect -p sle-module-containers/15.5/x86_64
-SUSEConnect -p PackageHub/15.5/x86_64
+SUSEConnect -p sle-module-legacy/15.5/x86_64
 
-zypper install -y man man-pages-posix man-pages rsyslog vim-data aaa_base-extras wget zypper-log
+zypper install -y man man-pages-posix man-pages rsyslog vim-data aaa_base-extras wget zypper-log netcat
 systemctl enable --now rsyslog
 zypper install -y docker helm
 zypper install -y -t pattern documentation enhanced_base yast2_basis
@@ -45,7 +45,7 @@ TIMEOUT=6    # 6 x 10 second sleeps
 COUNTER=0
 
 while true; do
-    if echo -e '\q' | nc "ranch-utils" "$MYSQL_PORT" > /dev/null 2>&1; then
+    if  nc -zv "ranch-utils" "$MYSQL_PORT" | grep "succeeded" > /dev/null 2>&1; then
         echo "MySQL is up!"
         break
     else
@@ -64,7 +64,7 @@ done
 
 if hostname | grep 'rancher1'; then
     curl -sfL https://get.k3s.io |  INSTALL_K3S_VERSION=<VERSION> sh -s - server \
-  --datastore-endpoint="mysql://root:vagrant@tcp(ranch-utils:3306)/rancher-datastore"
+  --datastore-endpoint="mysql://root:vagrant@tcp(ranch-utils:3306)/rancherdatastore"
 
     scp /var/lib/rancher/k3s/server/token rancher2://tmp/rancher-token
 fi    
@@ -76,7 +76,7 @@ if hostname | grep 'rancher2'; then
     done
 
     curl -sfL https://get.k3s.io |  INSTALL_K3S_VERSION=<VERSION> sh -s - server \
-    --datastore-endpoint="mysql://root:vagrant@tcp(ranch-utils:3306)/rancher-datastore" \
+    --datastore-endpoint="mysql://root:vagrant@tcp(ranch-utils:3306)/rancherdatastore" \
     --token "$(cat /tmp/rancher-token)"
 fi 
 
