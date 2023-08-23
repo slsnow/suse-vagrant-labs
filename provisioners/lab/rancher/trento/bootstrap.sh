@@ -14,9 +14,7 @@ SUSEConnect -p sle-module-desktop-applications/15.5/x86_64
 SUSEConnect -p sle-module-server-applications/15.5/x86_64
 SUSEConnect -p sle-ha/15.5/x86_64 -r $SAPREGCODE
 SUSEConnect -p sle-module-sap-applications/15.5/x86_64
-SUSEConnect --de-register
-SUSEConnect --cleanup
-rm -rf /etc/zypp/{credentials,services,repos}.d/*
+SUSEConnect -p PackageHub/15.5/x86_64
 
 zypper install -y man man-pages-posix man-pages rsyslog vim-data aaa_base-extras wget zypper-log netcat
 systemctl enable --now rsyslog
@@ -28,7 +26,11 @@ mandb -c
 timedatectl set-timezone America/Denver
 
 ## Trento Installation
-# zypper in trento-server-installer
 
-# Client register script
+zypper in -y trento-server-installer apparmor-parser jq yq
+install-trento-server -w trentopass
 
+# Copy Client register script
+
+cp /tmp/trento-client-configure.sh /root/
+cp /tmp/trento-client-configure.sh /etc/trento/
