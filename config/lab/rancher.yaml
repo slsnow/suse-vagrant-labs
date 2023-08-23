@@ -1,10 +1,11 @@
 ---
-suseconnect-d: ["rancher1", "rancher2", "ranch-utils"]
+suseconnect-d: ["rancher1", "rancher2", "ranch-utils", "trento-sap1"]
 labname: "rancher"
-requiredsecrets: ["sleregcode"]
+requiredsecrets: ["sleregcode", "sapregcode"]
 
 machines:  
   trento:
     - ranch-utils
     - rancher1
     - rancher2
+    - trento-sap1

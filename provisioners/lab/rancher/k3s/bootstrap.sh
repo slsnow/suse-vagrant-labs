@@ -99,11 +99,4 @@ if hostname | grep 'rancher1'; then
     helm install rancher rancher-latest/rancher --namespace cattle-system --set hostname=$(hostname -f) --set replicas=1 --set bootstrapPassword=rancheradminpass
 fi
 
-## TRENTO DEPLOYMENT
-if [ $DEPLOYMENT == "trento" ]; then
-    if hostname | grep 'rancher1'; then
-        helm install trento-server oci://registry.suse.com/trento/trento-server --set trento-web.adminUser.password=trentopass
-    fi
-fi     
-
 echo -e "\nDeployment Complete"

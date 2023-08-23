@@ -25,3 +25,4 @@ ff02::3         ipv6-allhosts
 $SUBNET.40  ranch-utils.labs.suse.com      ranch-utils
 $SUBNET.41  rancher1.labs.suse.com         rancher1
 $SUBNET.42  rancher2.labs.suse.com         rancher2
+$SUBNET.43  trento-sap1.labs.suse.com      trento-sap1
