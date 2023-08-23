@@ -11,22 +11,25 @@ SUSEConnect -p SLES/15.5/x86_64 -r $SLEREGCODE
 SUSEConnect -p sle-module-basesystem/15.5/x86_64
 SUSEConnect -p sle-module-server-applications/15.5/x86_64
 SUSEConnect -p sle-module-web-scripting/15.5/x86_64
-SUSEConnect -p sle-module-desktop-applications/15.4/x86_64
-SUSEConnect -p sle-module-development-tools/15.4/x86_64
-SUSEConnect -p sle-module-python3/15.4/x86_64
+SUSEConnect -p sle-module-desktop-applications/15.5/x86_64
+SUSEConnect -p sle-module-development-tools/15.5/x86_64
+SUSEConnect -p sle-module-python3/15.5/x86_64
 SUSEConnect -p sle-module-containers/15.5/x86_64
 
-zypper install -y man man-pages-posix man-pages rsyslog vim-data aaa_base-extras wget zypper-log
+zypper install -y man man-pages-posix man-pages rsyslog vim-data aaa_base-extras wget zypper-log netcat
 systemctl enable --now rsyslog
-zypper install -y docker helm
+
+zypper install -y mariadb mariadb-client
+echo "[mysqld]" > /etc/my.cnf.d/bind-all-addresses.cnf
+echo "bind-address = 0.0.0.0" >> /etc/my.cnf.d/bind-all-addresses.cnf
+systemctl enable --now mariadb
+mysql -e "CREATE DATABASE rancherdatastore;"
+mysql -e "GRANT ALL PRIVILEGES ON *.* TO 'root'@'rancher1.labs.suse.com' IDENTIFIED BY 'vagrant' WITH GRANT OPTION;"
+mysql -e "GRANT ALL PRIVILEGES ON *.* TO 'root'@'rancher2.labs.suse.com' IDENTIFIED BY 'vagrant' WITH GRANT OPTION;"
+mysql -e "FLUSH PRIVILEGES;"
+
 zypper install -y -t pattern documentation enhanced_base yast2_basis
 zypper patch -y
 zypper patch -y
 mandb -c
 timedatectl set-timezone America/Denver
-
-## Mariadb (mysql) for rancher data store
-zypper install mariadb mariadb-client
-systemctl enable --now mariadb
-
-mysql -e "CREATE DATABASE rancherdatastore;"

@@ -11,9 +11,9 @@ SUSEConnect -p SLES/15.5/x86_64 -r $SLEREGCODE
 SUSEConnect -p sle-module-basesystem/15.5/x86_64
 SUSEConnect -p sle-module-server-applications/15.5/x86_64
 SUSEConnect -p sle-module-web-scripting/15.5/x86_64
-SUSEConnect -p sle-module-desktop-applications/15.4/x86_64
-SUSEConnect -p sle-module-development-tools/15.4/x86_64
-SUSEConnect -p sle-module-python3/15.4/x86_64
+SUSEConnect -p sle-module-desktop-applications/15.5/x86_64
+SUSEConnect -p sle-module-development-tools/15.5/x86_64
+SUSEConnect -p sle-module-python3/15.5/x86_64
 SUSEConnect -p sle-module-containers/15.5/x86_64
 SUSEConnect -p sle-module-legacy/15.5/x86_64
 
@@ -44,7 +44,7 @@ MYSQL_PORT=3306
 TIMEOUT=6    # 6 x 10 second sleeps
 COUNTER=0
 
-while true; do
+while false; do
     if  nc -zv "ranch-utils" "$MYSQL_PORT" | grep "succeeded" > /dev/null 2>&1; then
         echo "MySQL is up!"
         break
@@ -63,48 +63,47 @@ done
 ## https://ranchermanager.docs.rancher.com/how-to-guides/new-user-guides/kubernetes-cluster-setup/k3s-for-rancher
 
 if hostname | grep 'rancher1'; then
-    curl -sfL https://get.k3s.io |  INSTALL_K3S_VERSION=<VERSION> sh -s - server \
-  --datastore-endpoint="mysql://root:vagrant@tcp(ranch-utils:3306)/rancherdatastore"
-
+    curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION=v1.25.12+k3s1 sh -s - server --datastore-endpoint="mysql://root:vagrant@tcp(ranch-utils:3306)/rancherdatastore"
     scp /var/lib/rancher/k3s/server/token rancher2://tmp/rancher-token
 fi    
 
 if hostname | grep 'rancher2'; then
-    while [ ! -f /var/lib/rancher/k3s/server/token ]; do
+    while [ ! -f /tmp/rancher-token ]; do
         echo "Waiting for rancher1, k3s initialization to complete."
         sleep 10  # wait for 5 seconds before checking again
     done
-
-    curl -sfL https://get.k3s.io |  INSTALL_K3S_VERSION=<VERSION> sh -s - server \
-    --datastore-endpoint="mysql://root:vagrant@tcp(ranch-utils:3306)/rancherdatastore" \
+    sleep 15
+    curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION=v1.25.12+k3s1 sh -s - server --datastore-endpoint="mysql://root:vagrant@tcp(ranch-utils:3306)/rancherdatastore" \
     --token "$(cat /tmp/rancher-token)"
 fi 
 
 ## backup and store kubeconfig
 mkdir -p /root/rancher-backup/
-mkdir -p /root/.kube/config
+mkdir -p /root/.kube
 cp /etc/rancher/k3s/k3s.yaml /root/rancher-backup/k3s.yaml-backup
 cp /etc/rancher/k3s/k3s.yaml /root/.kube/config
 
 ## Install kubectl
-curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-install -o root -g root -m 0755 kubectl /usr/local/bin/kubectl
+curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl" -o /tmp/kubectl
+install -o root -g root -m 0755 /tmp/kubectl /usr/local/bin/kubectl
+/usr/local/bin/kubectl version
 
 ## Rancher Install
 if hostname | grep 'rancher1'; then
     helm repo add rancher-latest https://releases.rancher.com/server-charts/latest
-    kubectl create namespace cattle-system
-    kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.11.0/cert-manager.crds.yaml
+    /usr/local/bin/kubectl create namespace cattle-system
+    /usr/local/bin/kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.11.0/cert-manager.crds.yaml
     helm repo add jetstack https://charts.jetstack.io
     helm repo update
-    
-    helm install cert-manager jetstack/cert-manager \
-    --namespace cert-manager \
-    --create-namespace \
-    --version v1.11.0
-    
-    helm install rancher rancher-latest/rancher \
-    --namespace cattle-system \
-    --set hostname=$(hostname -f) \
-    --set replicas=1 \
-    --set bootstrapPassword=rancheradminpass
+    helm install cert-manager jetstack/cert-manager --namespace cert-manager --create-namespace --version v1.11.0
+    helm install rancher rancher-latest/rancher --namespace cattle-system --set hostname=$(hostname -f) --set replicas=1 --set bootstrapPassword=rancheradminpass
+fi
+
+## TRENTO DEPLOYMENT
+if [ $DEPLOYMENT == "trento" ]; then
+    if hostname | grep 'rancher1'; then
+        helm install trento-server oci://registry.suse.com/trento/trento-server --set trento-web.adminUser.password=trentopass
+    fi
+fi     
+
+echo -e "\nDeployment Complete"
