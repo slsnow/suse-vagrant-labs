@@ -6,7 +6,8 @@ requiredsecrets: ["sleregcode", "sumaregcode", "sumaproxyregcode", "sccorguser",
 machines:  
   pre-setup43:
     - sumaserver43
-    - sles15sp5
+    - build15sp4
+    - kvm15sp4
   training:
     - sumaserver42
     - client1
@@ -14,6 +15,10 @@ machines:
     - client3
     - client4
     - major-up
+  slem:
+    - sumaserver43
+    - build15sp4
+    - kvm15sp4
   fulldeploy:
     - sumaserver43
     - sumaproxy43

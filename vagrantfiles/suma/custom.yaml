@@ -1,11 +1,11 @@
 ---
 wheredir: "../../"
-deployment: "fulldeploy"
+deployment: "slem"
 extra: false
 libvirt:
   cpus: 1
   memory: 1024
-  machine_virtual_size: 20
+  machine_virtual_size: 50
 network:
   bridgename: "br0"
   nameserver: "192.168.0.1"
