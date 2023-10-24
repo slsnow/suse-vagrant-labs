@@ -54,3 +54,5 @@ $SUBNET.78  sumaserver1.labs.suse.com   sumaserver1
 $SUBNET.79  ubuntu1804.labs.suse.com    ubuntu1804
 $SUBNET.80  ubuntu2004.labs.suse.com    ubuntu2004
 $SUBNET.81  ubuntu2204.labs.suse.com    ubuntu2204
+$SUBNET.83  build15sp4.labs.suse.com    build15sp4
+$SUBNET.84  kvm15sp4.labs.suse.com      kvm15sp4
