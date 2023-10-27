@@ -169,25 +169,33 @@ elif [[ $DEPLOYMENT == "fulldeploy" || $DEPLOYMENT == "fulldeploy-insane" || $DE
       sle-product-sles15-sp4-pool-x86_64 sle-product-sles15-sp4-updates-x86_64\
       sle-module-basesystem15-sp4-pool-x86_64 sle-module-basesystem15-sp4-updates-x86_64\
       sle-module-server-applications15-sp4-pool-x86_64 sle-module-server-applications15-sp4-updates-x86_64\
+      sle-module-public-cloud15-sp4-pool-x86_64 sle-module-public-cloud15-sp4-updates-x86_64\
       sle-module-desktop-applications15-sp4-pool-x86_64 sle-module-desktop-applications15-sp4-updates-x86_64\
       sle-module-devtools15-sp4-pool-x86_64 sle-module-devtools15-sp4-updates-x86_64\
       sle-module-python3-15-sp4-pool-x86_64 sle-module-python3-15-sp4-updates-x86_64\
       sle-manager-tools15-pool-x86_64-sp4 sle-manager-tools15-updates-x86_64-sp4
 
+      # Mirror channels for SLES 15 SP5 
+      mgr-sync add channels\
+      sle-product-sles15-sp5-pool-x86_64 sle-product-sles15-sp5-updates-x86_64\
+      sle-module-basesystem15-sp5-pool-x86_64 sle-module-basesystem15-sp5-updates-x86_64\
+      sle-module-server-applications15-sp5-pool-x86_64 sle-module-server-applications15-sp5-updates-x86_64\
+      sle-module-public-cloud15-sp5-pool-x86_64 sle-module-public-cloud15-sp5-updates-x86_64\
+      sle-module-desktop-applications15-sp5-pool-x86_64 sle-module-desktop-applications15-sp5-updates-x86_64\
+      sle-module-devtools15-sp5-pool-x86_64 sle-module-devtools15-sp5-updates-x86_64\
+      sle-module-python3-15-sp5-pool-x86_64 sle-module-python3-15-sp5-updates-x86_64\
+      sle-manager-tools15-pool-x86_64-sp5 sle-manager-tools15-updates-x86_64-sp5
+
       # Mirror channels for SLEM 5.4
       mgr-sync add channels\
       sle-micro-5.4-pool-x86_64 sle-micro-5.4-updates-x86_64\
       sle-module-live-patching15-sp4-pool-x86_64-micro-5.4 sle-module-live-patching15-sp4-updates-x86_64-micro-5.4\
-      sle-module-packagehub-subpackages15-sp4-pool-x86_64-micro-5.4 sle-module-packagehub-subpackages15-sp4-updates-x86_64-micro-5.4\
-      suse-packagehub-15-sp4-backports-pool-x86_64-micro-5.4 suse-packagehub-15-sp4-pool-x86_64-micro-5.4\
       sle-manager-tools-for-micro5-pool-x86_64-5.4 sle-manager-tools-for-micro5-updates-x86_64-5.4
 
       # Mirror channels for SLEM 5.5
       mgr-sync add channels\
       sle-micro-5.5-pool-x86_64 sle-micro-5.5-updates-x86_64\
       sle-module-live-patching15-sp5-pool-x86_64-micro-5.5 sle-module-live-patching15-sp5-updates-x86_64-micro-5.5\
-      sle-module-packagehub-subpackages15-sp5-pool-x86_64-micro-5.5 sle-module-packagehub-subpackages15-sp5-updates-x86_64-micro-5.5\
-      suse-packagehub-15-sp5-backports-pool-x86_64-micro-5.5 suse-packagehub-15-sp5-pool-x86_64-micro-5.5\
       sle-manager-tools-for-micro5-pool-x86_64-5.5 sle-manager-tools-for-micro5-updates-x86_64-5.5
 
     elif [ $DEPLOYMENT == "fulldeploy-insane" ]; then
