@@ -11,7 +11,7 @@ Vagrant.configure("2") do |config|
   WD = custom_vars["wheredir"]
   global_vars = YAML.load_file("#{WD}config/global.yaml")
   secret_vars = YAML.load_file("#{WD}config/secret.yaml")
-  lab_vars = YAML.load_file("#{WD}config/lab/ha15.yaml")
+  lab_vars = YAML.load_file("#{WD}config/lab/ha-kvm.yaml")
   LABNAME = lab_vars["labname"]
   lab_vars["requiredsecrets"].each do |code|
     if (secret_vars[code.downcase].empty?)
@@ -40,8 +40,8 @@ Vagrant.configure("2") do |config|
     }
   end
 
-  # NFS15
-  config.vm.define "#{LABNAME}nfs15" do |sle|
+  # NFS
+  config.vm.define "#{LABNAME}nfs" do |sle|
     machine_vars = YAML.load_file("#{WD}config/machines/#{LABNAME}/#{LABNAME}nfs15.yaml")
     n1_vars = YAML.load_file("#{WD}config/machines/#{LABNAME}/#{LABNAME}n1.yaml")
     n2_vars = YAML.load_file("#{WD}config/machines/#{LABNAME}/#{LABNAME}n2.yaml")
@@ -170,6 +170,8 @@ Vagrant.configure("2") do |config|
         "N1IP" => n1_vars["ipaddress"],
         "N3IP" => n3_vars["ipaddress"]
       }
+    end
+  end        
 
   # HA15 Cluster Node 3
   config.vm.define "#{LABNAME}n3" do |sle|
