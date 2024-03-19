@@ -1,6 +1,6 @@
 ---
 ipaddress: ".153"
-fqdn: "nfs15.labs.suse.com"
-short: "nfs15"
+fqdn: "kvmnfs.labs.suse.com"
+short: "kvmnfs"
 ntpserver: ".1"
 haproduct: "sle-ha/15.5/x86_64"

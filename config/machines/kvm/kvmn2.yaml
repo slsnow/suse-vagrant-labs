@@ -1,6 +1,6 @@
 ---
 ipaddress: ".152"
-fqdn: "ha15n2.labs.suse.com"
-short: "ha15n2"
+fqdn: "kvmn2.labs.suse.com"
+short: "kvmn2"
 ntpserver: ".1"
 haproduct: "sle-ha/15.5/x86_64"

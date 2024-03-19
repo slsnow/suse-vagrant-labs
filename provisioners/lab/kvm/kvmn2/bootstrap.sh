@@ -5,7 +5,7 @@ DEPLOY=$2
 
 echo "Deploying ${MACHINE} ${DEPLOY} configurations..."
 
-if [ "$MACHINE" == "ha15n2" ]; then
+if [ "$MACHINE" == "kvmn2" ]; then
   SUSEConnect --cleanup
   rpm -e --nodeps sles-release
   SUSEConnect -p $SAPPRODUCT -r $SAPREGCODE
@@ -29,9 +29,9 @@ if [ "$MACHINE" == "ha15n2" ]; then
   zypper install -y nfs-client
   zypper install -y -t pattern ha_sles
 
-  echo "${SUBNET}${N1IP} ha15n2.labs.suse.com ha15n1" >>/etc/hosts
-  echo "${SUBNET}${N3IP} ha15n2.labs.suse.com ha15n3" >>/etc/hosts
-  echo "${SUBNET}${NFS15IP} nfs15.labs.suse.com nfs15" >>/etc/hosts
+  echo "${SUBNET}${N1IP} kvmn1.labs.suse.com kvmn1" >>/etc/hosts
+  echo "${SUBNET}${N3IP} kvmn2.labs.suse.com kvmn3" >>/etc/hosts
+  echo "${SUBNET}${NFS15IP} kvmnfs.labs.suse.com kvmnfs" >>/etc/hosts
   
 
   if [ "$DEPLOY" == "training" ]; then

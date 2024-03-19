@@ -11,7 +11,7 @@ Vagrant.configure("2") do |config|
   WD = custom_vars["wheredir"]
   global_vars = YAML.load_file("#{WD}config/global.yaml")
   secret_vars = YAML.load_file("#{WD}config/secret.yaml")
-  lab_vars = YAML.load_file("#{WD}config/lab/ha-kvm.yaml")
+  lab_vars = YAML.load_file("#{WD}config/lab/kvm.yaml")
   LABNAME = lab_vars["labname"]
   lab_vars["requiredsecrets"].each do |code|
     if (secret_vars[code.downcase].empty?)
@@ -42,7 +42,7 @@ Vagrant.configure("2") do |config|
 
   # NFS
   config.vm.define "#{LABNAME}nfs" do |sle|
-    machine_vars = YAML.load_file("#{WD}config/machines/#{LABNAME}/#{LABNAME}nfs15.yaml")
+    machine_vars = YAML.load_file("#{WD}config/machines/#{LABNAME}/#{LABNAME}nfs.yaml")
     n1_vars = YAML.load_file("#{WD}config/machines/#{LABNAME}/#{LABNAME}n1.yaml")
     n2_vars = YAML.load_file("#{WD}config/machines/#{LABNAME}/#{LABNAME}n2.yaml")
     n3_vars = YAML.load_file("#{WD}config/machines/#{LABNAME}/#{LABNAME}n3.yaml")
@@ -67,8 +67,8 @@ Vagrant.configure("2") do |config|
       }
     end
     sle.vm.provision "shell" do |s|
-      s.path = "#{WD}provisioners/lab/#{LABNAME}/#{LABNAME}nfs15/bootstrap.sh"
-      s.args = "#{LABNAME}nfs15 #{custom_vars["deployment"]}"
+      s.path = "#{WD}provisioners/lab/#{LABNAME}/#{LABNAME}nfs/bootstrap.sh"
+      s.args = "#{LABNAME}nfs #{custom_vars["deployment"]}"
       s.env = {
         "SUBNET" => custom_vars["network"]["primarysubnet"],
         "N1IP" => n1_vars["ipaddress"],
@@ -81,7 +81,7 @@ Vagrant.configure("2") do |config|
   # HA15 Cluster Node 1
   config.vm.define "#{LABNAME}n1" do |sle|
     machine_vars = YAML.load_file("#{WD}config/machines/#{LABNAME}/#{LABNAME}n1.yaml")
-    nfs15_vars = YAML.load_file("#{WD}config/machines/#{LABNAME}/#{LABNAME}nfs15.yaml")
+    nfs15_vars = YAML.load_file("#{WD}config/machines/#{LABNAME}/#{LABNAME}nfs.yaml")
     n2_vars = YAML.load_file("#{WD}config/machines/#{LABNAME}/#{LABNAME}n2.yaml")
     n3_vars = YAML.load_file("#{WD}config/machines/#{LABNAME}/#{LABNAME}n3.yaml")
     sle.vm.box = global_vars["box"]["sle15sp5"]
@@ -132,7 +132,7 @@ Vagrant.configure("2") do |config|
   # HA15 Cluster Node 2
   config.vm.define "#{LABNAME}n2" do |sle|
     machine_vars = YAML.load_file("#{WD}config/machines/#{LABNAME}/#{LABNAME}n2.yaml")
-    nfs15_vars = YAML.load_file("#{WD}config/machines/#{LABNAME}/#{LABNAME}nfs15.yaml")
+    nfs15_vars = YAML.load_file("#{WD}config/machines/#{LABNAME}/#{LABNAME}nfs.yaml")
     n1_vars = YAML.load_file("#{WD}config/machines/#{LABNAME}/#{LABNAME}n1.yaml")
     n3_vars = YAML.load_file("#{WD}config/machines/#{LABNAME}/#{LABNAME}n3.yaml")
     sle.vm.box = global_vars["box"]["sle15sp5"]
@@ -176,7 +176,7 @@ Vagrant.configure("2") do |config|
   # HA15 Cluster Node 3
   config.vm.define "#{LABNAME}n3" do |sle|
   machine_vars = YAML.load_file("#{WD}config/machines/#{LABNAME}/#{LABNAME}n3.yaml")
-  nfs15_vars = YAML.load_file("#{WD}config/machines/#{LABNAME}/#{LABNAME}nfs15.yaml")
+  nfs15_vars = YAML.load_file("#{WD}config/machines/#{LABNAME}/#{LABNAME}nfs.yaml")
   n1_vars = YAML.load_file("#{WD}config/machines/#{LABNAME}/#{LABNAME}n1.yaml")
   n2_vars = YAML.load_file("#{WD}config/machines/#{LABNAME}/#{LABNAME}n2.yaml")
   sle.vm.box = global_vars["box"]["sle15sp5"]
