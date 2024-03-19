@@ -1,0 +1,6 @@
+---
+suseconnect-d: ["ha15n1", "ha15n2", "ha15n3", "nfs15"]
+labname: "ha-kvm"
+requiredsecrets: ["sleregcode", "sapregcode"]
+floatingip1: ".251"
+floatingip2: ".252"

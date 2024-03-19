@@ -1,0 +1,219 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# All Vagrant configuration is done below. The "2" in Vagrant.configure
+# configures the configuration version (we support older styles for
+# backwards compatibility). Please don't change it unless you know what
+# you're doing.
+
+Vagrant.configure("2") do |config|
+  custom_vars = YAML.load_file("./custom.yaml")
+  WD = custom_vars["wheredir"]
+  global_vars = YAML.load_file("#{WD}config/global.yaml")
+  secret_vars = YAML.load_file("#{WD}config/secret.yaml")
+  lab_vars = YAML.load_file("#{WD}config/lab/ha15.yaml")
+  LABNAME = lab_vars["labname"]
+  lab_vars["requiredsecrets"].each do |code|
+    if (secret_vars[code.downcase].empty?)
+      abort("Required #{code.downcase} variable has not been filled out in the config/secret.yaml file.")
+    end
+  end
+  config.vm.synced_folder ".", "/vagrant", disabled: true
+  config.vm.provider :libvirt do |libvirt, override|
+    libvirt.cpus = custom_vars["libvirt"]["cpus"]
+    libvirt.memory = custom_vars["libvirt"]["memory"]
+    libvirt.machine_virtual_size = custom_vars["libvirt"]["machine_virtual_size"]
+  end
+
+  config.trigger.before :destroy do |trigger|
+    trigger.name = "unregister"
+    trigger.info = "unregister client"
+    trigger.on_error = :continue
+    trigger.only_on = lab_vars["suseconnect-d"]
+    trigger.run_remote = {inline: <<-SHELL
+      echo "nameserver #{custom_vars["network"]["nameserver"]}" >>/etc/resolv.conf
+      if [[ $( SUSEConnect --status | python -c "import sys, json; print(json.load(sys.stdin)[0]['status'])" ) == "Registered" ]];
+      then
+        SUSEConnect -d;
+      fi
+    SHELL
+    }
+  end
+
+  # NFS15
+  config.vm.define "#{LABNAME}nfs15" do |sle|
+    machine_vars = YAML.load_file("#{WD}config/machines/#{LABNAME}/#{LABNAME}nfs15.yaml")
+    n1_vars = YAML.load_file("#{WD}config/machines/#{LABNAME}/#{LABNAME}n1.yaml")
+    n2_vars = YAML.load_file("#{WD}config/machines/#{LABNAME}/#{LABNAME}n2.yaml")
+    n3_vars = YAML.load_file("#{WD}config/machines/#{LABNAME}/#{LABNAME}n3.yaml")
+    sle.vm.box = global_vars["box"]["sle15sp5"]
+    sle.vm.box_url = global_vars["boxurl"]["sle15sp5"]
+    sle.vm.hostname = machine_vars["fqdn"]
+    sle.vm.network "private_network", ip: "#{custom_vars["network"]["primarysubnet"]}#{machine_vars["ipaddress"]}", hostname: true
+    sle.vm.provider :libvirt do |libvirt, override|
+      libvirt.cpus = 2
+      libvirt.machine_virtual_size = 40
+    end
+    sle.vm.provision "shell" do |s|
+      s.path = "#{WD}provisioners/common/bootstrap.sh"
+      s.args = "SLE15"
+      s.env = {
+        "SLEREGCODE" => secret_vars["sleregcode"],
+        "IPADDRESS" => "#{custom_vars["network"]["primarysubnet"]}#{machine_vars["ipaddress"]}",
+        "FQDN" => machine_vars["fqdn"],
+        "SHORT" => machine_vars["short"],
+        "SUBNET" => custom_vars["network"]["primarysubnet"],
+        "NTPSERVER" => "#{custom_vars["network"]["primarysubnet"]}#{machine_vars["ntpserver"]}"
+      }
+    end
+    sle.vm.provision "shell" do |s|
+      s.path = "#{WD}provisioners/lab/#{LABNAME}/#{LABNAME}nfs15/bootstrap.sh"
+      s.args = "#{LABNAME}nfs15 #{custom_vars["deployment"]}"
+      s.env = {
+        "SUBNET" => custom_vars["network"]["primarysubnet"],
+        "N1IP" => n1_vars["ipaddress"],
+        "N2IP" => n2_vars["ipaddress"],
+        "N3IP" => n3_vars["ipaddress"]
+      }
+    end
+  end
+
+  # HA15 Cluster Node 1
+  config.vm.define "#{LABNAME}n1" do |sle|
+    machine_vars = YAML.load_file("#{WD}config/machines/#{LABNAME}/#{LABNAME}n1.yaml")
+    nfs15_vars = YAML.load_file("#{WD}config/machines/#{LABNAME}/#{LABNAME}nfs15.yaml")
+    n2_vars = YAML.load_file("#{WD}config/machines/#{LABNAME}/#{LABNAME}n2.yaml")
+    n3_vars = YAML.load_file("#{WD}config/machines/#{LABNAME}/#{LABNAME}n3.yaml")
+    sle.vm.box = global_vars["box"]["sle15sp5"]
+    sle.vm.box_url = global_vars["boxurl"]["sle15sp5"]
+    sle.vm.hostname = machine_vars["fqdn"]
+    sle.vm.network "private_network", ip: "#{custom_vars["network"]["primarysubnet"]}#{machine_vars["ipaddress"]}", hostname: true
+    if ! (custom_vars["network"]["bridgename"].empty?)
+      sle.vm.network "public_network", dev: custom_vars["network"]["bridgename"], mode: "bridge", type: "bridge"
+    end
+    sle.vm.provision "shell" do |s|
+      s.path = "#{WD}provisioners/common/bootstrap.sh"
+      s.args = "SLE15"
+      s.env = {
+        "SAPREGCODE" => secret_vars["sapregcode"],
+        "SAPPRODUCT" => machine_vars["sapproduct"],
+        "SLEREGCODE" => secret_vars["sleregcode"],
+        "IPADDRESS" => "#{custom_vars["network"]["primarysubnet"]}#{machine_vars["ipaddress"]}",
+        "FQDN" => machine_vars["fqdn"],
+        "SHORT" => machine_vars["short"],
+        "SUBNET" => custom_vars["network"]["primarysubnet"],
+        "NTPSERVER" => "#{custom_vars["network"]["primarysubnet"]}#{machine_vars["ntpserver"]}"
+      }
+    end
+    sle.vm.provision "file", source: "#{WD}provisioners/lab/#{LABNAME}/#{LABNAME}n1/crm_ha15_part1.txt", destination: "/tmp/"
+    sle.vm.provision "file", source: "#{WD}provisioners/lab/#{LABNAME}/#{LABNAME}n1/crm_ha15_part2.txt", destination: "/tmp/"
+    sle.vm.provision "file", source: "#{WD}provisioners/lab/#{LABNAME}/#{LABNAME}n1/crm_ha15_part3.txt", destination: "/tmp/"
+    sle.vm.provision "file", source: "#{WD}provisioners/lab/#{LABNAME}/#{LABNAME}n1/crm_ha15_part4.txt", destination: "/tmp/"
+    sle.vm.provision "file", source: "#{WD}provisioners/lab/#{LABNAME}/#{LABNAME}n1/crm_ha15_part5.txt", destination: "/tmp/"
+    sle.vm.provision "file", source: "#{WD}provisioners/lab/#{LABNAME}/#{LABNAME}n1/authorized_keys", destination: "/tmp/"
+    sle.vm.provision "file", source: "#{WD}provisioners/lab/#{LABNAME}/#{LABNAME}n1/id_rsa", destination: "/tmp/"
+    sle.vm.provision "file", source: "#{WD}provisioners/lab/#{LABNAME}/#{LABNAME}n1/id_rsa.pub", destination: "/tmp/"
+    sle.vm.provision "shell" do |s|
+      s.path = "#{WD}provisioners/lab/#{LABNAME}/#{LABNAME}n1/bootstrap.sh"
+      s.args = "#{LABNAME}n1 #{custom_vars["deployment"]}"
+      s.env = {
+        "HAREGCODE" => secret_vars["haregcode"],
+        "HAPRODUCT" => machine_vars["haproduct"],
+        "FLOATINGIP1" => "#{custom_vars["network"]["primarysubnet"]}#{lab_vars["floatingip1"]}", 
+        "FLOATINGIP2" => "#{custom_vars["network"]["primarysubnet"]}#{lab_vars["floatingip2"]}",
+        "SUBNET" => custom_vars["network"]["primarysubnet"],
+        "NFS15IP" => nfs15_vars["ipaddress"],
+        "N2IP" => n2_vars["ipaddress"],
+        "N3IP" => n3_vars["ipaddress"]
+      }
+    end
+  end
+
+  # HA15 Cluster Node 2
+  config.vm.define "#{LABNAME}n2" do |sle|
+    machine_vars = YAML.load_file("#{WD}config/machines/#{LABNAME}/#{LABNAME}n2.yaml")
+    nfs15_vars = YAML.load_file("#{WD}config/machines/#{LABNAME}/#{LABNAME}nfs15.yaml")
+    n1_vars = YAML.load_file("#{WD}config/machines/#{LABNAME}/#{LABNAME}n1.yaml")
+    n3_vars = YAML.load_file("#{WD}config/machines/#{LABNAME}/#{LABNAME}n3.yaml")
+    sle.vm.box = global_vars["box"]["sle15sp5"]
+    sle.vm.box_url = global_vars["boxurl"]["sle15sp5"]
+    sle.vm.hostname = machine_vars["fqdn"]
+    sle.vm.network "private_network", ip: "#{custom_vars["network"]["primarysubnet"]}#{machine_vars["ipaddress"]}", hostname: true
+    if ! (custom_vars["network"]["bridgename"].empty?)
+      sle.vm.network "public_network", dev: custom_vars["network"]["bridgename"], mode: "bridge", type: "bridge"
+    end
+    sle.vm.provision "shell" do |s|
+      s.path = "#{WD}provisioners/common/bootstrap.sh"
+      s.args = "SLE15"
+      s.env = {
+        "SLEREGCODE" => secret_vars["sleregcode"],
+        "IPADDRESS" => "#{custom_vars["network"]["primarysubnet"]}#{machine_vars["ipaddress"]}",
+        "FQDN" => machine_vars["fqdn"],
+        "SHORT" => machine_vars["short"],
+        "SUBNET" => custom_vars["network"]["primarysubnet"],
+        "NTPSERVER" => "#{custom_vars["network"]["primarysubnet"]}#{machine_vars["ntpserver"]}"
+      }
+    end
+    sle.vm.provision "file", source: "#{WD}provisioners/lab/#{LABNAME}/#{LABNAME}n2/authorized_keys", destination: "/tmp/"
+    sle.vm.provision "file", source: "#{WD}provisioners/lab/#{LABNAME}/#{LABNAME}n2/id_rsa", destination: "/tmp/"
+    sle.vm.provision "file", source: "#{WD}provisioners/lab/#{LABNAME}/#{LABNAME}n2/id_rsa.pub", destination: "/tmp/"
+    sle.vm.provision "shell" do |s|
+      s.path = "#{WD}provisioners/lab/#{LABNAME}/#{LABNAME}n2/bootstrap.sh"
+      s.args = "#{LABNAME}n2 #{custom_vars["deployment"]}"
+      s.env = {
+        "SAPREGCODE" => secret_vars["sapregcode"],
+        "SAPPRODUCT" => machine_vars["sapproduct"],
+        "HAREGCODE" => secret_vars["haregcode"],
+        "HAPRODUCT" => machine_vars["haproduct"],
+        "SUBNET" => custom_vars["network"]["primarysubnet"],
+        "NFS15IP" => nfs15_vars["ipaddress"],
+        "N1IP" => n1_vars["ipaddress"],
+        "N3IP" => n3_vars["ipaddress"]
+      }
+
+  # HA15 Cluster Node 3
+  config.vm.define "#{LABNAME}n3" do |sle|
+  machine_vars = YAML.load_file("#{WD}config/machines/#{LABNAME}/#{LABNAME}n3.yaml")
+  nfs15_vars = YAML.load_file("#{WD}config/machines/#{LABNAME}/#{LABNAME}nfs15.yaml")
+  n1_vars = YAML.load_file("#{WD}config/machines/#{LABNAME}/#{LABNAME}n1.yaml")
+  n2_vars = YAML.load_file("#{WD}config/machines/#{LABNAME}/#{LABNAME}n2.yaml")
+  sle.vm.box = global_vars["box"]["sle15sp5"]
+  sle.vm.box_url = global_vars["boxurl"]["sle15sp5"]
+  sle.vm.hostname = machine_vars["fqdn"]
+  sle.vm.network "private_network", ip: "#{custom_vars["network"]["primarysubnet"]}#{machine_vars["ipaddress"]}", hostname: true
+  if ! (custom_vars["network"]["bridgename"].empty?)
+    sle.vm.network "public_network", dev: custom_vars["network"]["bridgename"], mode: "bridge", type: "bridge"
+  end
+  sle.vm.provision "shell" do |s|
+    s.path = "#{WD}provisioners/common/bootstrap.sh"
+    s.args = "SLE15"
+    s.env = {
+      "SAPREGCODE" => secret_vars["sapregcode"],
+      "SAPPRODUCT" => machine_vars["sapproduct"],
+      "SLEREGCODE" => secret_vars["sleregcode"],
+      "IPADDRESS" => "#{custom_vars["network"]["primarysubnet"]}#{machine_vars["ipaddress"]}",
+      "FQDN" => machine_vars["fqdn"],
+      "SHORT" => machine_vars["short"],
+      "SUBNET" => custom_vars["network"]["primarysubnet"],
+      "NTPSERVER" => "#{custom_vars["network"]["primarysubnet"]}#{machine_vars["ntpserver"]}"
+    }
+  end
+  sle.vm.provision "file", source: "#{WD}provisioners/lab/#{LABNAME}/#{LABNAME}n3/authorized_keys", destination: "/tmp/"
+  sle.vm.provision "file", source: "#{WD}provisioners/lab/#{LABNAME}/#{LABNAME}n3/id_rsa", destination: "/tmp/"
+  sle.vm.provision "file", source: "#{WD}provisioners/lab/#{LABNAME}/#{LABNAME}n3/id_rsa.pub", destination: "/tmp/"
+  sle.vm.provision "shell" do |s|
+    s.path = "#{WD}provisioners/lab/#{LABNAME}/#{LABNAME}n3/bootstrap.sh"
+    s.args = "#{LABNAME}n3 #{custom_vars["deployment"]}"
+    s.env = {
+      "SAPREGCODE" => secret_vars["sapregcode"],
+      "SAPPRODUCT" => machine_vars["sapproduct"],
+      "HAREGCODE" => secret_vars["haregcode"],
+      "HAPRODUCT" => machine_vars["haproduct"],
+      "SUBNET" => custom_vars["network"]["primarysubnet"],
+      "NFS15IP" => nfs15_vars["ipaddress"],
+      "N1IP" => n1_vars["ipaddress"],
+      "N2IP" => n2_vars["ipaddress"]
+    }
+    end
+  end
+end
