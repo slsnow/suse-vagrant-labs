@@ -1,6 +1,6 @@
 ---
 suseconnect-d: ["kvmn1", "kvmn2", "kvmn3", "kvmnfs"]
-labname: "ha-kvm"
+labname: "kvm"
 requiredsecrets: ["sleregcode", "sapregcode"]
 floatingip1: ".251"
 floatingip2: ".252"

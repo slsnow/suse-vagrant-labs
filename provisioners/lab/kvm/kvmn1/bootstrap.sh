@@ -37,21 +37,7 @@ if [ "$DEPLOY" == "training" ]; then
     echo "training"
   elif [ "$DEPLOY" == "fulldeploy" ]; then
     echo "fulldeploy"
-    # give node 2 time to setup its end of things
-    sleep 30
-    echo "softdog" > /etc/modules-load.d/watchdog.conf
-    systemctl restart systemd-modules-load
-    rescan-scsi-bus.sh
-    until fdisk -l 2>/dev/null | grep " 1 GiB" ; do
-      echo "The iscsi SBD device is not yet available. Sleeping 10 seconds.."
-      sleep 10
-    done
-    DEV=$(fdisk -l 2>/dev/null | grep ' 1 GiB' | awk '{print $2}' | cut -c 1-8 | sed 's/\/dev\///' )
-    BYID=$(ls -l /dev/disk/by-id/ | grep "$DEV" | head -1 | awk '{print $9}' | sed 's/^/\/dev\/disk\/by-id\//' )
-    echo "The iscsi SBD device ${BYID} was found! Continuing.."
-    crm cluster init -s ${BYID} -i eth1 -y
-    sed -i 's/use_lvmlockd = 0/use_lvmlockd = 1/' /etc/lvm/lvm.conf
-    systemctl enable --now lvmlockd
+    
     mkdir /shared
     mkdir /data
     mkdir -p /exports/data2
@@ -93,6 +79,4 @@ else
   echo "Machine not recognized."
 fi
 
-ssh ha15n2 reboot
-reboot
 echo "Finished deploying ${MACHINE} ${DEPLOY} configurations."

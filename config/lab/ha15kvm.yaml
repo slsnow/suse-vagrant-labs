@@ -1,0 +1,16 @@
+---
+suseconnect-d: ["nfs", "kvm-node1", "kvm-node2", "kvm-node3"]
+labname: "ha15kvm"
+requiredsecrets: ["sleregcode", "sapregcode"]
+
+machines:  
+  basic-3node:
+    - nfs15sp5
+    - kvm-node1
+    - kvm-node2
+    - kvm-node3    
+  fulldeploy-3node:
+    - nfs15sp5
+    - kvm-node1
+    - kvm-node2
+    - kvm-node3  

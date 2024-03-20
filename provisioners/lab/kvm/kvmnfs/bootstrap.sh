@@ -5,7 +5,7 @@ DEPLOY=$2
 
 echo "Deploying ${MACHINE} ${DEPLOY} configurations..."
 
-if [ "$MACHINE" == "ha-kvm-nfs" ]; then
+if [ "$MACHINE" == "kvmnfs" ]; then
   echo "StrictHostKeyChecking no" >>/etc/ssh/ssh_config
   mkdir /root/.ssh
   chmod 700 /root/.ssh
@@ -17,16 +17,29 @@ if [ "$MACHINE" == "ha-kvm-nfs" ]; then
   chown root:root /root/.ssh/authorized_keys
   chown root:root /root/.ssh/id_rsa
   chown root:root /root/.ssh/id_rsa.pub
-  zypper install -y yast2-nfs-server
-  echo "${SUBNET}${N1IP} ha-kvm-n1.labs.suse.com ha15n2" >>/etc/hosts
-  echo "${SUBNET}${N2IP} ha-kvm-n2.labs.suse.com ha15n2" >>/etc/hosts
-  echo "${SUBNET}${N3IP} ha-kvm-n3.labs.suse.com ha15n3" >>/etc/hosts
 
+
+  
+
+  echo "${SUBNET}${N1IP} kvmn1.labs.suse.com kvmn1" >>/etc/hosts
+  echo "${SUBNET}${N2IP} kvmn2.labs.suse.com kvmn2" >>/etc/hosts
+  echo "${SUBNET}${N3IP} kvmn3.labs.suse.com kvmn3" >>/etc/hosts
+
+
+  
 
   if [ "$DEPLOY" == "training" ]; then
     echo "training"
-  elif [ "$DEPLOY" == "fulldeploy" ]; then
 
+  elif [ "$DEPLOY" == "fulldeploy" ]; then
+    echo "fulldeply"
+    zypper install -y yast2-nfs-server nfs-kernel-server
+    mkdir -p /opt/kvm
+    echo "/opt/kvm *(rw,sync,no_subtree_check,no_root_squash)" >> /etc/exports
+    systemctl enable --now nfs-server
+    exportfs -ra
+    zypper in -y -t pattern documentation enhanced_base yast2_basis yast2_server
+    
   else
     echo "Deployment not recognized."
   fi

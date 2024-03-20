@@ -30,7 +30,7 @@ if [ "$MACHINE" == "kvmn2" ]; then
   zypper install -y -t pattern ha_sles
 
   echo "${SUBNET}${N1IP} kvmn1.labs.suse.com kvmn1" >>/etc/hosts
-  echo "${SUBNET}${N3IP} kvmn2.labs.suse.com kvmn3" >>/etc/hosts
+  echo "${SUBNET}${N3IP} kvmn3.labs.suse.com kvmn3" >>/etc/hosts
   echo "${SUBNET}${NFS15IP} kvmnfs.labs.suse.com kvmnfs" >>/etc/hosts
   
 
