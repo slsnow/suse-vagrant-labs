@@ -32,10 +32,12 @@ if [ $DEPLOYMENT == "fulldeploy-3node" ]; then
 
   zypper install -y yast2-nfs-server nfs-kernel-server
   mkdir -p /opt/kvm
+  touch /opt/kvm/test
   echo "/opt/kvm *(rw,sync,no_subtree_check,no_root_squash)" >> /etc/exports
-  systemctl enable --now nfs-server
   exportfs -ra
+  systemctl enable --now nfs-server
   zypper in -y -t pattern documentation enhanced_base yast2_basis yast2_server
+fi
 
 systemctl disable --now firewalld 
 sh -c 'echo root:nfspass | chpasswd'

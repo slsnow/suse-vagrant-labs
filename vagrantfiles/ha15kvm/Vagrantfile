@@ -5,7 +5,7 @@ custom_vars = YAML.load_file("./custom.yaml")
 WD = custom_vars["wheredir"]
 global_vars = YAML.load_file("#{WD}config/global.yaml")
 secret_vars = YAML.load_file("#{WD}config/secret.yaml")
-lab_vars = YAML.load_file("#{WD}config/lab/suma.yaml")
+lab_vars = YAML.load_file("#{WD}config/lab/ha15kvm.yaml")
 LABNAME = lab_vars["labname"]
 lab_vars["requiredsecrets"].each do |code|
   if (secret_vars[code.downcase].empty?)
