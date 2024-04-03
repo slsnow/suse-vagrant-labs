@@ -74,6 +74,9 @@ if [ $DEPLOYMENT == "fulldeploy-3node" ]; then
   crm cluster join -y -i eth1 -c kvm-node1
   
   zypper install -y -t pattern kvm_server kvm_tools
+  systemctl enable --now libvirtd
+  virsh net-autostart default
+  virsh net-start default
 
 
 fi
