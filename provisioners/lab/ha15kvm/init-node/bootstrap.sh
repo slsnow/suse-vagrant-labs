@@ -70,7 +70,7 @@ if [ $DEPLOYMENT == "fulldeploy-3node" ]; then
   crm cluster init -y -i eth1
   sed -i 's/SBD_DELAY_START=no/SBD_DELAY_START=yes/' /etc/sysconfig/sbd
   
-  systemct enable sbd
+  systemctl enable sbd
   crm cluster restart
   sleep 5
   touch /opt/kvm/cluster-is-initialized
